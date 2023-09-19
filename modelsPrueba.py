@@ -51,7 +51,7 @@ class Usuario(models.Model):
 
 
 # ==== TABLA ACTIVIDADES ====
-class Actividad(models.Model):
+class Actividades(models.Model):
     id_actividad = models.AutoField(primary_key=True)
     titulo = models.CharField(max_length=100)
     imagen = models.FileField(upload_to='actividad_imagenes/', null=True, blank=True)
@@ -63,9 +63,9 @@ class Actividad(models.Model):
 
 
 # ==== TABLA MODULOS ====
-class Modulo(models.Model):
+class Modulos(models.Model):
     id_modulo = models.AutoField(primary_key=True)
-    actividad = models.ForeignKey(Actividad, on_delete=models.CASCADE)
+    id_actividad = models.ForeignKey(Actividades, on_delete=models.CASCADE)
     titulo_mod = models.CharField(max_length=100)
     instrucciones = models.CharField(max_length=255)
     imagen_mod = models.FileField(upload_to='modulo_imagenes/', null=True, blank=True)
@@ -76,9 +76,9 @@ class Modulo(models.Model):
 
 
 # ==== TABLA EVIDENCIAS MODULOS ====
-class EvidenciaModulo(models.Model):
+class EvidenciaModulos(models.Model):
     id_respuesta = models.AutoField(primary_key=True)
-    modulo = models.OneToOneField(Modulo, on_delete=models.CASCADE)
+    id_modulo = models.OneToOneField(Modulos, on_delete=models.CASCADE)
     texto_res = models.CharField(max_length=255)
     archivo_res = models.FileField(upload_to='evidencia_archivos/', null=True, blank=True)
 
@@ -87,7 +87,7 @@ class EvidenciaModulo(models.Model):
 
 
 # ==== TABLA EVALUACIONES ====
-class Evaluacion(models.Model):
+class Evaluaciones(models.Model):
     id_evaluacion = models.AutoField(primary_key=True)
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     tipo_evaluacion = models.CharField(max_length=100)
@@ -99,9 +99,9 @@ class Evaluacion(models.Model):
 
 
 # ==== TABLA RESULTADO EVALUACIONES ====
-class ResultadoEvaluacion(models.Model):
+class ResultadoEvaluaciones(models.Model):
     id_resultado = models.AutoField(primary_key=True)
-    evaluacion = models.OneToOneField(Evaluacion, on_delete=models.CASCADE)
+    id_evaluacion = models.OneToOneField(Evaluaciones, on_delete=models.CASCADE)
     competencia_1 = models.IntegerField()
     competencia_2 = models.IntegerField()
     competencia_3 = models.IntegerField()
@@ -113,9 +113,9 @@ class ResultadoEvaluacion(models.Model):
 
 
 # ==== TABLA ESTADISTICAS ====
-class Estadistica(models.Model):
+class Estadisticas(models.Model):
     id_estadistica = models.AutoField(primary_key=True)
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     actividades = models.IntegerField()
     evidencias = models.IntegerField()
     progreso = models.IntegerField()
@@ -125,9 +125,9 @@ class Estadistica(models.Model):
 
 
 # ==== TABLA PROGRESO ACTIVIDADES ====
-class ProgresoActividad(models.Model):
+class ProgresoActividades(models.Model):
     id_progreso = models.AutoField(primary_key=True)
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     actividad1 = models.BooleanField(default=False)
     actividad2 = models.BooleanField(default=False)
     actividad3 = models.BooleanField(default=False)
@@ -140,9 +140,9 @@ class ProgresoActividad(models.Model):
 # ==== TABLA PROGRESO USUARIOS ====
 class ProgresoUsuarios(models.Model):
     id_progreso_usuario = models.AutoField(primary_key=True)
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
-    actividad = models.ForeignKey(Actividad, on_delete=models.CASCADE)
-    modulo = models.ForeignKey(Modulo, on_delete=models.CASCADE)
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    id_actividad = models.ForeignKey(Actividades, on_delete=models.CASCADE)
+    id_modulo = models.ForeignKey(Modulos, on_delete=models.CASCADE)
     estado_actividad = models.BooleanField(default=False)
     estado_modulo = models.BooleanField(default=False)
 
@@ -156,10 +156,10 @@ class Administrador(models.Model):
     correo = models.CharField(max_length=100)
     contrasena = models.CharField(max_length=100)
     username = models.CharField(max_length=100)
-    resultados_evaluaciones = models.ManyToManyField(ResultadoEvaluacion)
-    evidencias_modulos = models.ManyToManyField(EvidenciaModulo)
-    progreso_actividades = models.ManyToManyField(ProgresoActividad)
-    estadisticas = models.ManyToManyField(Estadistica)
+    resultados_evaluaciones = models.ManyToManyField(ResultadoEvaluaciones)
+    evidencias_modulos = models.ManyToManyField(EvidenciaModulos)
+    progreso_actividades = models.ManyToManyField(ProgresoActividades)
+    estadisticas = models.ManyToManyField(Estadisticas)
 
     def __str__(self):
         return self.username
