@@ -76,7 +76,7 @@ class Modulos(models.Model):
 
 
 # ==== TABLA EVIDENCIAS MODULOS ====
-class EvidenciaModulo(models.Model):
+class EvidenciaModulos(models.Model):
     id_respuesta = models.AutoField(primary_key=True)
     id_modulo = models.OneToOneField(Modulos, on_delete=models.CASCADE)
     texto_res = models.CharField(max_length=255)
@@ -157,7 +157,7 @@ class Administrador(models.Model):
     contrasena = models.CharField(max_length=100)
     username = models.CharField(max_length=100)
     resultados_evaluaciones = models.ManyToManyField(ResultadoEvaluaciones)
-    evidencias_modulos = models.ManyToManyField(EvidenciaModulo)
+    evidencias_modulos = models.ManyToManyField(EvidenciaModulos)
     progreso_actividades = models.ManyToManyField(ProgresoActividades)
     estadisticas = models.ManyToManyField(Estadisticas)
 
