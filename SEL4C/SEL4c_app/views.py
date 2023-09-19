@@ -100,9 +100,10 @@ from django.http import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Usuario
+from .models import Usuario, Actividades, Modulos, EvidenciaModulos, Evaluaciones, ResultadoEvaluaciones, Estadisticas, ProgresoActividades, ProgresoUsuarios, Administrador
 from django.shortcuts import get_object_or_404
-from .serializers import UsuarioSerializer
+from .serializers import UsuarioSerializer, ActividadesSerializer, ModulosSerializer, EvidenciaModulosSerializer, EvaluacionesSerializer, ResultadoEvaluacionesSerializer, EstadisticasSerializer, ProgresoActividadesSerializer, ProgresoUsuariosSerializer, AdministradorSerializer
+
 
 # Importa tus modelos y serializadores aquí
 
@@ -142,5 +143,9 @@ class UploadModuleEvidenceView(APIView):
         # Implementa la lógica para subir evidencias de módulos aquí
         return Response({"message": "Evidencia subida exitosamente"})
 
-# Implementa las vistas para CRUD de actividades y módulos según tus necesidades
+# CRUD de actividades y módulos
+
+
+
+
 
