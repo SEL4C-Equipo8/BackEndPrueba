@@ -56,7 +56,6 @@ class Actividades(models.Model):
     titulo = models.CharField(max_length=100)
     imagen = models.FileField(upload_to='actividad_imagenes/', null=True, blank=True)
     descripcion = models.CharField(max_length=255)
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.titulo

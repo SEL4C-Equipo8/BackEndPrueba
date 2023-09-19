@@ -144,6 +144,31 @@ class UploadModuleEvidenceView(APIView):
         return Response({"message": "Evidencia subida exitosamente"})
 
 # CRUD de actividades y módulos
+class ActivityDetailView(APIView):
+    def get(self, request, id_actividad):
+        actividad = get_object_or_404(Actividades, id_actividad=id_actividad)
+        serializer = ActividadesSerializer(actividad)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = ActividadesSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Actividad publicada con éxito"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, id_actividad):
+        actividad = get_object_or_404(Actividades, id_actividad=id_actividad)
+        serializer = ActividadesSerializer(actividad, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Actividad actualizada con éxito"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id_actividad):
+        actividad = get_object_or_404(Actividades, id_actividad=id_actividad)
+        actividad.delete()
+        return Response({"message": "Actividad eliminada con éxito"})
 
 
 
