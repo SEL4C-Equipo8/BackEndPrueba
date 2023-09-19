@@ -2,8 +2,8 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from .modelsPrueba import Usuario, Actividad, Modulo, EvidenciaModulo, Evaluacion, ResultadoEvaluacion, Estadistica, ProgresoActividad, ProgresoUsuarios, Administrador
-from .serializersPrueba import UsuarioSerializer, ActualizarPerfilSerializer, RegistroUsuarioSerializer, ResultadoEvaluacionSerializer, EvidenciaModuloSerializer, ObtenerActividadSerializer
+from .modelsPrueba import Usuario, Actividades, Modulos, EvidenciaModulos, Evaluaciones, ResultadoEvaluaciones, Estadisticas, ProgresoActividades, ProgresoUsuarios, Administrador
+from .SEL4C.SEL4c_app.serializers import UsuarioSerializer, ActualizarPerfilSerializer, RegistroUsuarioSerializer, ResultadoEvaluacionSerializer, EvidenciaModuloSerializer, ActividadesSerializer
 
 # ===== USUARIO =====
 class PerfilUsuarioView(generics.RetrieveUpdateAPIView):
