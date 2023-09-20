@@ -303,3 +303,111 @@ class AdminEducationSegmentationView(APIView):
         education_segmentation = Usuario.objects.values('grado_ac').annotate(count=Count('grado_ac'))
         return Response({"education_segmentation": education_segmentation})
 
+class UserProgressView(APIView):
+    def get(self, request):
+        return Response({"mensaje": "API de progreso del usuario"})
+
+class UserProgressBarsView(APIView):
+    def get(self, request, id_usuario):
+        try:
+            usuario = Usuario.objects.get(id_usuario=id_usuario)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        estadisticas = Estadisticas.objects.filter(id_usuario=id_usuario).first()
+
+        if not estadisticas:
+            return Response({"error": "Estadísticas no encontradas"}, status=status.HTTP_404_NOT_FOUND)
+
+        data = {
+            "id_estadistica": estadisticas.id_estadistica,
+            "id_usuario": usuario.id_usuario,
+            "actividades": estadisticas.actividades,
+            "evidencias": estadisticas.evidencias,
+            "progreso": estadisticas.progreso,
+        }
+
+        return Response(data)
+
+class UserProgressBriefView(APIView):
+    def get(self, request, id_usuario):
+        try:
+            usuario = Usuario.objects.get(id_usuario=id_usuario)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        progreso_actividades = ProgresoActividades.objects.filter(id_usuario=id_usuario).first()
+
+        if not progreso_actividades:
+            return Response({"error": "Progreso de actividades no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        data = {
+            "id_progreso": progreso_actividades.id_progreso,
+            "id_usuario": usuario.id_usuario,
+            "actividad1": progreso_actividades.actividad1,
+            "actividad2": progreso_actividades.actividad2,
+            "actividad3": progreso_actividades.actividad3,
+            "actividad4": progreso_actividades.actividad4,
+        }
+
+        return Response(data)
+
+class UserProgressInitialEvaluationView(APIView):
+    def get(self, request, id_usuario):
+        try:
+            usuario = Usuario.objects.get(id_usuario=id_usuario)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        resultado_evaluacion_inicial = ResultadoEvaluaciones.objects.filter(usuario=usuario, tipo_evaluacion="inicial").first()
+
+        if not resultado_evaluacion_inicial:
+            return Response({"error": "Resultados de evaluación inicial no encontrados"}, status=status.HTTP_404_NOT_FOUND)
+
+        data = {
+            "id_resultado": resultado_evaluacion_inicial.id_resultado,
+            "id_evaluacion": resultado_evaluacion_inicial.id_evaluacion,
+            "competencia1": resultado_evaluacion_inicial.competencia_1,
+            "competencia2": resultado_evaluacion_inicial.competencia_2,
+            "competencia3": resultado_evaluacion_inicial.competencia_3,
+            "competencia4": resultado_evaluacion_inicial.competencia_4,
+            "competencia5": resultado_evaluacion_inicial.competencia_5,
+        }
+
+        return Response(data)
+
+class UserProgressFinalEvaluationView(APIView):
+    def get(self, request, id_usuario):
+        try:
+            usuario = Usuario.objects.get(id_usuario=id_usuario)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        resultado_evaluacion_inicial = ResultadoEvaluaciones.objects.filter(usuario=usuario, tipo_evaluacion="inicial").first()
+        resultado_evaluacion_final = ResultadoEvaluaciones.objects.filter(usuario=usuario, tipo_evaluacion="final").first()
+
+        if not resultado_evaluacion_inicial or not resultado_evaluacion_final:
+            return Response({"error": "Resultados de evaluación no encontrados"}, status=status.HTTP_404_NOT_FOUND)
+
+        data = {
+            "evaluacionInicial": {
+                "id_resultado": resultado_evaluacion_inicial.id_resultado,
+                "id_evaluacion": resultado_evaluacion_inicial.id_evaluacion,
+                "competencia1": resultado_evaluacion_inicial.competencia_1,
+                "competencia2": resultado_evaluacion_inicial.competencia_2,
+                "competencia3": resultado_evaluacion_inicial.competencia_3,
+                "competencia4": resultado_evaluacion_inicial.competencia_4,
+                "competencia5": resultado_evaluacion_inicial.competencia_5,
+            },
+            "evaluacionFinal": {
+                "id_resultado": resultado_evaluacion_final.id_resultado,
+                "id_evaluacion": resultado_evaluacion_final.id_evaluacion,
+                "competencia1": resultado_evaluacion_final.competencia_1,
+                "competencia2": resultado_evaluacion_final.competencia_2,
+                "competencia3": resultado_evaluacion_final.competencia_3,
+                "competencia4": resultado_evaluacion_final.competencia_4,
+                "competencia5": resultado_evaluacion_final.competencia_5,
+            }
+        }
+
+        return Response(data)

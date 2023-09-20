@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import UserProfileView, UserLoginView, UserSignupView, UploadEvaluationResultsView, UploadModuleEvidenceView, ActivityDetailView, ModuleDetailView, AdminDetailView, AdminListView
 from .views import AdminDashboardView, AdminPersonalProgressView, AdminUsersListView, AdminGenderSegmentationView, AdminAgeSegmentationView, AdminNationalitySegmentationView, AdminEducationSegmentationView
+from .views import UserProgressView, UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView
 
 urlpatterns = [
     path('api/user/profile/<int:user_id>/', UserProfileView.as_view(), name='user-profile'),
@@ -19,4 +20,9 @@ urlpatterns = [
     path('api/segmentation/admin/age', AdminAgeSegmentationView.as_view(), name='admin-age-segmentation'),
     path('api/segmentation/admin/nationality', AdminNationalitySegmentationView.as_view(), name='admin-nationality-segmentation'),
     path('api/segmentation/admin/education', AdminEducationSegmentationView.as_view(), name='admin-education-segmentation'),
+    path('api/user/progress', UserProgressView.as_view(), name='user-progress'),
+    path('api/user/progress/bars/<int:id_usuario>', UserProgressBarsView.as_view(), name='user-progress-bars'),
+    path('api/user/progress/brief/<int:id_usuario>', UserProgressBriefView.as_view(), name='user-progress-brief'),
+    path('api/user/progress/initialEvaluation/<int:id_usuario>', UserProgressInitialEvaluationView.as_view(), name='user-progress-initial-evaluation'),
+    path('api/user/progress/finalEvaluation/<int:id_usuario>', UserProgressFinalEvaluationView.as_view(), name='user-progress-final-evaluation'),
 ]
