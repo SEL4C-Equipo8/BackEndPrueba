@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import UserProfileView, UserLoginView, UserSignupView, UploadEvaluationResultsView, UploadModuleEvidenceView, ActivityDetailView
+from .views import UserProfileView, UserLoginView, UserSignupView, UploadEvaluationResultsView, UploadModuleEvidenceView, ActivityDetailView, ModuleDetailView, AdminDetailView, AdminListView
 
 urlpatterns = [
     path('api/user/profile/<int:user_id>/', UserProfileView.as_view(), name='user-profile'),
@@ -8,6 +8,7 @@ urlpatterns = [
     path('api/user/signup/', UserSignupView.as_view(), name='user-signup'),
     path('api/user/evaluations/', UploadEvaluationResultsView.as_view(), name='upload-evaluation-results'),
     path('api/user/evidences/', UploadModuleEvidenceView.as_view(), name='upload-module-evidence'),
-    path('api/admin/activity/<int:id_actividad>/', ActivityDetailView.as_view(), name='activity-detail'),
-    # Agrega las URLS para las otras vistas aquí
+    path('api/admin/activity/<int:id_actividad>/module/<int:id_modulo>/', ModuleDetailView.as_view(), name='module-detail'),
+    path('api/admin/', AdminListView.as_view(), name='admin-list'),
+    path('api/admin/<int:id_admin>/', AdminDetailView.as_view(), name='admin-detail'),
 ]

@@ -170,7 +170,65 @@ class ActivityDetailView(APIView):
         actividad.delete()
         return Response({"message": "Actividad eliminada con éxito"})
 
+class ModuleDetailView(APIView):
+    def get(self, request, id_actividad, id_modulo):
+        modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
+        serializer = ModulosSerializer(modulo)
+        return Response(serializer.data)
 
+    def post(self, request, id_actividad):
+        data = request.data
+        data['id_actividad'] = id_actividad  # Asigna el ID de la actividad desde la URL a los datos
+        serializer = ModulosSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Módulo agregado con éxito"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def put(self, request, id_actividad, id_modulo):
+        modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
+        serializer = ModulosSerializer(modulo, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Módulo actualizado con éxito"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id_actividad, id_modulo):
+        modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
+        modulo.delete()
+        return Response({"message": "Módulo eliminado con éxito"})
+
+class AdminListView(APIView):
+    def get(self, request):
+        administradores = Administrador.objects.all()
+        serializer = AdministradorSerializer(administradores, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        data = request.data
+        serializer = AdministradorSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"mensaje": "Administrador creado exitosamente"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AdminDetailView(APIView):
+    def get(self, request, id_admin):
+        admin = get_object_or_404(Administrador, id_admin=id_admin)
+        serializer = AdministradorSerializer(admin)
+        return Response(serializer.data)
+
+    def put(self, request, id_admin):
+        admin = get_object_or_404(Administrador, id_admin=id_admin)
+        serializer = AdministradorSerializer(admin, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"mensaje": "Administrador actualizado exitosamente"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id_admin):
+        admin = get_object_or_404(Administrador, id_admin=id_admin)
+        admin.delete()
+        return Response({"mensaje": "Administrador eliminado exitosamente"})
 
 
