@@ -231,4 +231,75 @@ class AdminDetailView(APIView):
         admin.delete()
         return Response({"mensaje": "Administrador eliminado exitosamente"})
 
+class AdminDashboardView(APIView):
+    def get(self, request):
+        return Response({"mensaje": "Panel de control del administrador"})
+
+class AdminPersonalProgressView(APIView):
+    def get(self, request, user_id):
+        try:
+            usuario = Usuario.objects.get(id_usuario=user_id)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        resultado_evaluacion_inicial = ResultadoEvaluaciones.objects.filter(usuario=usuario, tipo_evaluacion="inicial").first()
+        resultado_evaluacion_final = ResultadoEvaluaciones.objects.filter(usuario=usuario, tipo_evaluacion="final").first()
+
+        if not resultado_evaluacion_inicial or not resultado_evaluacion_final:
+            return Response({"error": "Resultados de evaluación no encontrados"}, status=status.HTTP_404_NOT_FOUND)
+
+        data = {
+            "user_id": usuario.id_usuario,
+            "username": usuario.username,
+            "resultado_evaluacion_inicial": {
+                "competencia1": resultado_evaluacion_inicial.competencia_1,
+                "competencia2": resultado_evaluacion_inicial.competencia_2,
+                "competencia3": resultado_evaluacion_inicial.competencia_3,
+                "competencia4": resultado_evaluacion_inicial.competencia_4,
+                "competencia5": resultado_evaluacion_inicial.competencia_5,
+            },
+            "resultado_evaluacion_final": {
+                "competencia1": resultado_evaluacion_final.competencia_1,
+                "competencia2": resultado_evaluacion_final.competencia_2,
+                "competencia3": resultado_evaluacion_final.competencia_3,
+                "competencia4": resultado_evaluacion_final.competencia_4,
+                "competencia5": resultado_evaluacion_final.competencia_5,
+            }
+        }
+
+        return Response(data)
+
+class AdminUsersListView(APIView):
+    def get(self, request):
+        users = Usuario.objects.all()
+        serializer = UsuarioSerializer(users, many=True)
+        return Response({"users": serializer.data})
+
+class AdminGenderSegmentationView(APIView):
+    def get(self, request):
+        gender_segmentation = Usuario.objects.values('genero').annotate(count=Count('genero'))
+        return Response({"gender_segmentation": gender_segmentation})
+
+class AdminAgeSegmentationView(APIView):
+    def get(self, request):
+        age_segmentation = Usuario.objects.annotate(
+            age_group=Case(
+                When(edad__range=(18, 24), then="18-24"),
+                When(edad__range=(25, 34), then="25-34"),
+                When(edad__range=(35, 44), then="35-44"),
+                default="45+",
+                output_field=IntegerField(),
+            )
+        ).values('age_group').annotate(count=Count('age_group'))
+        return Response({"age_segmentation": age_segmentation})
+
+class AdminNationalitySegmentationView(APIView):
+    def get(self, request):
+        nationality_segmentation = Usuario.objects.values('pais').annotate(count=Count('pais'))
+        return Response({"nationality_segmentation": nationality_segmentation})
+
+class AdminEducationSegmentationView(APIView):
+    def get(self, request):
+        education_segmentation = Usuario.objects.values('grado_ac').annotate(count=Count('grado_ac'))
+        return Response({"education_segmentation": education_segmentation})
 
