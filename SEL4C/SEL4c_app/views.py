@@ -1,112 +1,16 @@
-# from django.shortcuts import render
-# from rest_framework import generics
-# from rest_framework.response import Response
-# from rest_framework.views import APIView
-# from rest_framework import status
-# from .models import Usuario, Actividades, Modulos, EvidenciaModulos, Evaluaciones, ResultadoEvaluaciones, Estadisticas, ProgresoActividades, ProgresoUsuarios, Administrador
-# from .serializers import UsuarioSerializer, ActividadesSerializer, ModulosSerializer, EvidenciaModulosSerializer, EvaluacionesSerializer, ResultadoEvaluacionesSerializer, EstadisticasSerializer, ProgresoActividadesSerializer, ProgresoUsuariosSerializer, AdministradorSerializer
-
-
-# # ===== USUARIO =====
-# class PerfilUsuarioView(generics.RetrieveUpdateAPIView):
-#     queryset = Usuario.objects.all()
-#     serializer_class = UsuarioSerializer
-#     lookup_field = 'id'  # Esto define el campo por el cual buscar al usuario (en este caso, 'id')
-
-#     def update(self, request, *args, **kwargs):
-#         instance = self.get_object()
-#         serializer = UsuarioSerializer(instance, data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save()
-#         return Response({"message": "Datos de perfil actualizados"})
-
-# class IniciarSesionView(APIView):
-#     def post(self, request):
-#         email = request.data.get('email')
-#         contrasena = request.data.get('contrasena')
-
-#         if email and contrasena:
-#             usuario = Usuario.objects.filter(email=email).first()
-
-#             if usuario and usuario.check_password(contrasena):
-#                 # Las credenciales son correctas, el usuario está autenticado
-#                 return Response({"message": "Inicio de sesión exitosa"})
-#             else:
-#                 # Credenciales incorrectas
-#                 return Response({"message": "Credenciales incorrectas"}, status=status.HTTP_401_UNAUTHORIZED)
-#         else:
-#             # Faltan datos de inicio de sesión
-#             return Response({"message": "Falta email o contraseña"}, status=status.HTTP_400_BAD_REQUEST)
-
-# class RegistroUsuarioView(APIView):
-#     def post(self, request):
-#         serializer = RegistroUsuarioSerializer(data=request.data)
-
-#         if serializer.is_valid():
-#             # Crear un nuevo usuario con los datos proporcionados
-#             Usuario.objects.create(
-#                 username=serializer.validated_data['username'],
-#                 email=serializer.validated_data['email'],
-#                 grado_ac=serializer.validated_data['gradoAcademico'],
-#                 institucion=serializer.validated_data['institucion'],
-#                 genero=serializer.validated_data['genero'],
-#                 edad=serializer.validated_data['edad'],
-#                 pais=serializer.validated_data['pais']
-#             )
-
-#             return Response({"message": "Usuario registrado con éxito"})
-#         else:
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# # ===== EVALUACIONES =====
-# class CargarResultadoEvaluacion(APIView):
-#     def post(self, request):
-#         serializer = ResultadoEvaluacionSerializer(data=request.data)
-
-#         if serializer.is_valid():
-#             # Crear un nuevo resultado de evaluación con los datos proporcionados
-#             resultado_evaluacion = serializer.save()
-#             return Response({"message": "Resultado subido."})
-#         else:
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-
-
-# # ====== EVIDENCIAS MODULOS =====
-# class CargarEvidenciaModulo(APIView):
-#     def post(self, request):
-#         serializer = EvidenciaModulosSerializer(data=request.data)
-
-#         if serializer.is_valid():
-#             # Crear una nueva evidencia de módulo con los datos proporcionados
-#             EvidenciaModulos.objects.create(
-#                 id_respuesta=serializer.validated_data['idRespuesta'],
-#                 id_modulo=serializer.validated_data['idModulo'],
-#                 texto_res=serializer.validated_data['texto_res'],
-#                 archivo_res=serializer.validated_data['archivo_res']
-#             )
-
-#             return Response({"message": "Actividad subida exitosamente"})
-#         else:
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-
-
-# # ====== ACTIVIDADES =====
-
-
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
+from django.views import View
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Usuario, Actividades, Modulos, EvidenciaModulos, Evaluaciones, ResultadoEvaluaciones, Estadisticas, ProgresoActividades, ProgresoUsuarios, Administrador
 from django.shortcuts import get_object_or_404
 from .serializers import UsuarioSerializer, ActividadesSerializer, ModulosSerializer, EvidenciaModulosSerializer, EvaluacionesSerializer, ResultadoEvaluacionesSerializer, EstadisticasSerializer, ProgresoActividadesSerializer, ProgresoUsuariosSerializer, AdministradorSerializer
+from django.contrib.auth.hashers import check_password
 
-
-# Importa tus modelos y serializadores aquí
-
+#api/user/profile/<int:user_id>/
 class UserProfileView(APIView):
     def get(self, request, user_id):
         usuario = get_object_or_404(Usuario, id_usuario=user_id)
@@ -121,22 +25,84 @@ class UserProfileView(APIView):
             return Response({"message": "Datos de perfil actualizados"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# Implementa las vistas para los otros endpoints de manera similar
-
+#api/user/login/
 class UserLoginView(APIView):
-    def get(self, request):
-        # Implementa la lógica de inicio de sesión aquí
-        return Response({"message": "Inicio de sesión exitosa"})
-
-class UserSignupView(APIView):
     def post(self, request):
-        # Implementa la lógica de registro de usuarios aquí
-        return Response({"message": "Usuario registrado con éxito"})
+        # Obtener el correo electrónico y la contraseña de la solicitud POST
+        email = request.data.get('email')
+        password = request.data.get('contrasena')
 
+        try:
+            # Buscar al usuario por correo electrónico en la tabla personalizada
+            user = Usuario.objects.get(email=email)
+
+            # Verificar la contraseña
+            if user.contrasena == password:
+
+
+                return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
+            else:
+                # La contraseña es incorrecta
+                return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
+        except Usuario.DoesNotExist:
+            # El usuario no existe en la base de datos
+            return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
+
+#api/user/signup/
+class UserSignupView(APIView):
+    def post(self, request, *args, **kwargs):
+        # Obtenemos los datos del usuario desde la solicitud POST
+        data = request.data
+
+        # Serializamos los datos para validar y crear el usuario
+        serializer = UsuarioSerializer(data=data)
+
+        if serializer.is_valid():
+            # Creamos el usuario
+            usuario = serializer.save()
+
+            # Devolvemos una respuesta exitosa
+            response_data = {
+                "message": "Usuario registrado con éxito"
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        else:
+            # Si los datos no son válidos, devolvemos los errores
+            errors = serializer.errors
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+#api/user/evaluations/
 class UploadEvaluationResultsView(APIView):
     def post(self, request):
-        # Implementa la lógica para subir resultados de evaluaciones aquí
-        return Response({"message": "Resultado subido"})
+        data = request.data
+        try:
+            idevaluacion = data.get('id_evaluacion')
+            competencia1 = data.get('competencia_1')
+            competencia2 = data.get('competencia_2')
+            competencia3 = data.get('competencia_3')
+            competencia4 = data.get('competencia_4')
+            competencia5 = data.get('competencia_5')
+
+            
+            
+            # Crear un nuevo objeto de evaluación
+            evaluaciones=ResultadoEvaluaciones.model.objects.create(
+                id_evaluacion=data.idevaluacion,
+                #usuario=request.user,  # Supongamos que estás autenticando al usuario
+                competencia_1=competencia1,
+                competencia_2=competencia2,
+                competencia_3=competencia3,
+                competencia_4=competencia4,
+                competencia_5=competencia5
+            )
+            
+            evaluaciones.save()
+            
+            # Puedes realizar otras operaciones o cálculos aquí
+            
+            return Response({"message": "Resultado subido."}, status=status.HTTP_201_CREATED)
+        except:
+            return Response({"message": "Error al subir el resultado."}, status=status.HTTP_400_BAD_REQUEST)
 
 class UploadModuleEvidenceView(APIView):
     def post(self, request):
@@ -411,3 +377,4 @@ class UserProgressFinalEvaluationView(APIView):
         }
 
         return Response(data)
+    
