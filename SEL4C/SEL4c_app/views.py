@@ -25,6 +25,7 @@ class UserProfileView(APIView):
             return Response({"message": "Datos de perfil actualizados"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 #api/user/login/
 class UserLoginView(APIView):
     def post(self, request):
@@ -47,6 +48,7 @@ class UserLoginView(APIView):
         except Usuario.DoesNotExist:
             # El usuario no existe en la base de datos
             return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 #api/user/signup/
 class UserSignupView(APIView):
@@ -71,6 +73,27 @@ class UserSignupView(APIView):
             errors = serializer.errors
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+#api/user/evaluations/create
+class CreateEvaluationView(APIView):
+    def post(self, request):
+        try:
+            # Obtener los datos de la solicitud
+            data = request.data
+            tipo_evaluacion = data.get('tipo_evaluacion')
+            imagen_env = request.FILES.get('imagen_env')
+            
+            # Crear una nueva instancia de Evaluaciones
+            evaluacion = Evaluaciones.objects.create(
+                tipo_evaluacion=tipo_evaluacion,
+                imagen_env=imagen_env
+            )
+            
+            return Response({"message": "Evaluación creada correctamente."}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"message": f"Error al crear la evaluación: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
 #api/user/evaluations/
 class UploadEvaluationResultsView(APIView):
     def post(self, request):
@@ -82,13 +105,18 @@ class UploadEvaluationResultsView(APIView):
             competencia3 = data.get('competencia_3')
             competencia4 = data.get('competencia_4')
             competencia5 = data.get('competencia_5')
+            idusuario = data.get('id_usuario')  # Obtener el ID del usuario
 
-            
-            
-            # Crear un nuevo objeto de evaluación
-            evaluaciones=ResultadoEvaluaciones.model.objects.create(
-                id_evaluacion=data.idevaluacion,
-                #usuario=request.user,  # Supongamos que estás autenticando al usuario
+            # Buscar el objeto Usuario correspondiente o devolver un error 404 si no existe
+            usuario = Usuario.objects.filter(id_usuario=idusuario).first()
+
+            if usuario is None:
+                return Response({"message": "Usuario no encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+            # Crear un nuevo objeto de evaluación y asignar el usuario
+            evaluacion = ResultadoEvaluaciones.objects.create(
+                id_evaluacion_id=idevaluacion,
+                id_usuario_id=usuario.id_usuario,  # Asignar el usuario al objeto de evaluación
                 competencia_1=competencia1,
                 competencia_2=competencia2,
                 competencia_3=competencia3,
@@ -96,18 +124,27 @@ class UploadEvaluationResultsView(APIView):
                 competencia_5=competencia5
             )
             
-            evaluaciones.save()
-            
-            # Puedes realizar otras operaciones o cálculos aquí
-            
             return Response({"message": "Resultado subido."}, status=status.HTTP_201_CREATED)
         except:
             return Response({"message": "Error al subir el resultado."}, status=status.HTTP_400_BAD_REQUEST)
 
+
+#api/user/evidences/
 class UploadModuleEvidenceView(APIView):
     def post(self, request):
-        # Implementa la lógica para subir evidencias de módulos aquí
-        return Response({"message": "Evidencia subida exitosamente"})
+        # Obtén los datos de la solicitud JSON
+        data = request.data
+
+        # Crea una instancia del serializador con los datos de la solicitud
+        serializer = EvidenciaModulosSerializer(data=data)
+
+        if serializer.is_valid():
+            # Guarda la evidencia en la base de datos
+            serializer.save()
+            return Response({"message": "Actividad subida exitosamente"}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # CRUD de actividades y módulos
 class ActivityDetailView(APIView):

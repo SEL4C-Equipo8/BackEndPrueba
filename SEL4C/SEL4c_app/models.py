@@ -88,18 +88,17 @@ class EvidenciaModulos(models.Model):
 # ==== TABLA EVALUACIONES ====
 class Evaluaciones(models.Model):
     id_evaluacion = models.AutoField(primary_key=True)
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     tipo_evaluacion = models.CharField(max_length=100)
     imagen_env = models.FileField(upload_to='evaluacion_imagenes/', null=True, blank=True)
-    completado = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Evaluación de {self.usuario.username}"
+        return f"Evaluación tipo {self.tipo_evaluacion}"
 
 
 # ==== TABLA RESULTADO EVALUACIONES ====
 class ResultadoEvaluaciones(models.Model):
     id_resultado = models.AutoField(primary_key=True)
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     id_evaluacion = models.OneToOneField(Evaluaciones, on_delete=models.CASCADE)
     competencia_1 = models.IntegerField()
     competencia_2 = models.IntegerField()
