@@ -317,6 +317,7 @@ class UserProgressView(APIView):
     def get(self, request):
         return Response({"mensaje": "API de progreso del usuario"})
 
+# 
 class UserProgressBarsView(APIView):
     def get(self, request, id_usuario):
         try:
