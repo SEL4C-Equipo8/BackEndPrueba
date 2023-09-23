@@ -128,7 +128,7 @@ class UploadEvaluationResultsView(APIView):
         except:
             return Response({"message": "Error al subir el resultado."}, status=status.HTTP_400_BAD_REQUEST)
 
-
+#REVISAR CUANDO YA HAYA UN MÓDULO CREADO
 #api/user/evidences/
 class UploadModuleEvidenceView(APIView):
     def post(self, request):
@@ -146,20 +146,13 @@ class UploadModuleEvidenceView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# CRUD de actividades y módulos
+#api/admin/activities/<int:id_actividad>/
 class ActivityDetailView(APIView):
     def get(self, request, id_actividad):
         actividad = get_object_or_404(Actividades, id_actividad=id_actividad)
         serializer = ActividadesSerializer(actividad)
         return Response(serializer.data)
-
-    def post(self, request):
-        serializer = ActividadesSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Actividad publicada con éxito"})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
     def put(self, request, id_actividad):
         actividad = get_object_or_404(Actividades, id_actividad=id_actividad)
         serializer = ActividadesSerializer(actividad, data=request.data)
@@ -167,26 +160,28 @@ class ActivityDetailView(APIView):
             serializer.save()
             return Response({"message": "Actividad actualizada con éxito"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
     def delete(self, request, id_actividad):
         actividad = get_object_or_404(Actividades, id_actividad=id_actividad)
         actividad.delete()
         return Response({"message": "Actividad eliminada con éxito"})
 
+#api/admin/activities/
+class ActivityCreateView(APIView):
+    def post(self, request):
+        serializer = ActividadesSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Actividad publicada con éxito"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+#api/admin/activity/<int:id_actividad>/module/<int:id_modulo>/
 class ModuleDetailView(APIView):
     def get(self, request, id_actividad, id_modulo):
         modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
         serializer = ModulosSerializer(modulo)
         return Response(serializer.data)
-
-    def post(self, request, id_actividad):
-        data = request.data
-        data['id_actividad'] = id_actividad  # Asigna el ID de la actividad desde la URL a los datos
-        serializer = ModulosSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Módulo agregado con éxito"})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, id_actividad, id_modulo):
         modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
@@ -200,6 +195,18 @@ class ModuleDetailView(APIView):
         modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
         modulo.delete()
         return Response({"message": "Módulo eliminado con éxito"})
+    
+#api/admin/activity/<int:id_actividad>/module/  
+class ModuleCreateView(APIView):
+    def post(self, request, id_actividad):
+        data = request.data
+        data['id_actividad'] = id_actividad  # Asigna el ID de la actividad desde la URL a los datos
+        serializer = ModulosSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Módulo agregado con éxito"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class AdminListView(APIView):
     def get(self, request):
@@ -355,30 +362,40 @@ class UserProgressBriefView(APIView):
 
         return Response(data)
 
+#api/user/progress/initialEvaluation/<int:id_usuario/
 class UserProgressInitialEvaluationView(APIView):
     def get(self, request, id_usuario):
         try:
             usuario = Usuario.objects.get(id_usuario=id_usuario)
-        except Usuario.DoesNotExist:
+        except usuario.DoesNotExist:
             return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
-        resultado_evaluacion_inicial = ResultadoEvaluaciones.objects.filter(usuario=usuario, tipo_evaluacion="inicial").first()
+        resultado_evaluacion_inicial = ResultadoEvaluaciones.objects.filter(id_usuario=id_usuario, id_evaluacion=1).first()
 
         if not resultado_evaluacion_inicial:
             return Response({"error": "Resultados de evaluación inicial no encontrados"}, status=status.HTTP_404_NOT_FOUND)
 
+        resultado = str(resultado_evaluacion_inicial.id_resultado)
+        evaluacion = str(resultado_evaluacion_inicial.id_evaluacion)
+        competencia1 = str(resultado_evaluacion_inicial.competencia_1)
+        competencia2 = str(resultado_evaluacion_inicial.competencia_2)
+        competencia3 = str(resultado_evaluacion_inicial.competencia_3)
+        competencia4 = str(resultado_evaluacion_inicial.competencia_4)
+        competencia5 = str(resultado_evaluacion_inicial.competencia_5)
+
         data = {
-            "id_resultado": resultado_evaluacion_inicial.id_resultado,
-            "id_evaluacion": resultado_evaluacion_inicial.id_evaluacion,
-            "competencia1": resultado_evaluacion_inicial.competencia_1,
-            "competencia2": resultado_evaluacion_inicial.competencia_2,
-            "competencia3": resultado_evaluacion_inicial.competencia_3,
-            "competencia4": resultado_evaluacion_inicial.competencia_4,
-            "competencia5": resultado_evaluacion_inicial.competencia_5,
+            "id_resultado": resultado,
+            "id_evaluacion": evaluacion,
+            "competencia1": competencia1,
+            "competencia2": competencia2,
+            "competencia3": competencia3,
+            "competencia4": competencia4,
+            "competencia5": competencia5,
         }
 
         return Response(data)
 
+#api/user/progress/finalEvaluation/<int:id_usuario/
 class UserProgressFinalEvaluationView(APIView):
     def get(self, request, id_usuario):
         try:
@@ -386,31 +403,27 @@ class UserProgressFinalEvaluationView(APIView):
         except Usuario.DoesNotExist:
             return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
-        resultado_evaluacion_inicial = ResultadoEvaluaciones.objects.filter(usuario=usuario, tipo_evaluacion="inicial").first()
-        resultado_evaluacion_final = ResultadoEvaluaciones.objects.filter(usuario=usuario, tipo_evaluacion="final").first()
+        resultado_evaluacion_final = ResultadoEvaluaciones.objects.filter(id_usuario=id_usuario, id_evaluacion=2).first()
 
-        if not resultado_evaluacion_inicial or not resultado_evaluacion_final:
-            return Response({"error": "Resultados de evaluación no encontrados"}, status=status.HTTP_404_NOT_FOUND)
+        if not resultado_evaluacion_final:
+            return Response({"error": "Resultados de evaluación final no encontrados"}, status=status.HTTP_404_NOT_FOUND)
+
+        resultado = str(resultado_evaluacion_final.id_resultado)
+        evaluacion = str(resultado_evaluacion_final.id_evaluacion)
+        competencia1 = str(resultado_evaluacion_final.competencia_1)
+        competencia2 = str(resultado_evaluacion_final.competencia_2)
+        competencia3 = str(resultado_evaluacion_final.competencia_3)
+        competencia4 = str(resultado_evaluacion_final.competencia_4)
+        competencia5 = str(resultado_evaluacion_final.competencia_5)
 
         data = {
-            "evaluacionInicial": {
-                "id_resultado": resultado_evaluacion_inicial.id_resultado,
-                "id_evaluacion": resultado_evaluacion_inicial.id_evaluacion,
-                "competencia1": resultado_evaluacion_inicial.competencia_1,
-                "competencia2": resultado_evaluacion_inicial.competencia_2,
-                "competencia3": resultado_evaluacion_inicial.competencia_3,
-                "competencia4": resultado_evaluacion_inicial.competencia_4,
-                "competencia5": resultado_evaluacion_inicial.competencia_5,
-            },
-            "evaluacionFinal": {
-                "id_resultado": resultado_evaluacion_final.id_resultado,
-                "id_evaluacion": resultado_evaluacion_final.id_evaluacion,
-                "competencia1": resultado_evaluacion_final.competencia_1,
-                "competencia2": resultado_evaluacion_final.competencia_2,
-                "competencia3": resultado_evaluacion_final.competencia_3,
-                "competencia4": resultado_evaluacion_final.competencia_4,
-                "competencia5": resultado_evaluacion_final.competencia_5,
-            }
+            "id_resultado": resultado,
+            "id_evaluacion": evaluacion,
+            "competencia1": competencia1,
+            "competencia2": competencia2,
+            "competencia3": competencia3,
+            "competencia4": competencia4,
+            "competencia5": competencia5,
         }
 
         return Response(data)

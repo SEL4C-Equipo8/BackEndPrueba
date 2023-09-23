@@ -3,24 +3,26 @@ from . import views
 
 from .views import UserProfileView, UserLoginView, UserSignupView, UploadEvaluationResultsView, UploadModuleEvidenceView, ActivityDetailView, ModuleDetailView, AdminDetailView, AdminListView, CreateEvaluationView
 from .views import AdminDashboardView, AdminPersonalProgressView, AdminUsersListView, AdminGenderSegmentationView, AdminAgeSegmentationView, AdminNationalitySegmentationView, AdminEducationSegmentationView
-from .views import UserProgressView, UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView
+from .views import UserProgressView, UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView, ActivityCreateView, ModuleCreateView
 
 urlpatterns = [
     #####   USER   #####
-    # User (login, signup, profile)
+    # User (login, signup, profile) OK
     path('api/user/profile/<int:user_id>/', UserProfileView.as_view(), name='user-profile'),
     path('api/user/login/', UserLoginView.as_view(), name='user-login'),
     path('api/user/signup/', UserSignupView.as_view(), name='user-signup'),
     #  Evaluations
     path('api/user/evaluations/create', CreateEvaluationView.as_view(), name='upload-evaluation-results'),
     path('api/user/evaluations/', UploadEvaluationResultsView.as_view(), name='upload-evaluation-results'),
-    path('api/user/progress/initialEvaluation/<int:id_usuario>', UserProgressInitialEvaluationView.as_view(), name='user-progress-initial-evaluation'),
-    path('api/user/progress/finalEvaluation/<int:id_usuario>', UserProgressFinalEvaluationView.as_view(), name='user-progress-final-evaluation'),
-    # Activities
-    path('api/user/activities/', ActivityDetailView.as_view(), name='activity-detail'),
-    # Modules
+    path('api/user/progress/initialEvaluation/<int:id_usuario>/', UserProgressInitialEvaluationView.as_view(), name='user-progress-initial-evaluation'),
+    path('api/user/progress/finalEvaluation/<int:id_usuario>/', UserProgressFinalEvaluationView.as_view(), name='user-progress-final-evaluation'),
+    # Activities OK 
+    path('api/admin/activities/<int:id_actividad>/', ActivityDetailView.as_view(), name='activity-detail'),
+    path('api/admin/activities/', ActivityCreateView.as_view(), name='activity-detail'),
+    # Modules OK
     path('api/admin/activity/<int:id_actividad>/module/<int:id_modulo>/', ModuleDetailView.as_view(), name='module-detail'),
-    # Evidences
+    path('api/admin/activity/<int:id_actividad>/module/', ModuleCreateView.as_view(), name='module-detail'),
+    # Evidences OK
     path('api/user/evidences/', UploadModuleEvidenceView.as_view(), name='upload-module-evidence'),
     # Progress App
     path('api/user/progress', UserProgressView.as_view(), name='user-progress'),
