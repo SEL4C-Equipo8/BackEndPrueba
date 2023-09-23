@@ -66,7 +66,7 @@ class Modulos(models.Model):
     id_modulo = models.AutoField(primary_key=True)
     id_actividad = models.ForeignKey(Actividades, on_delete=models.CASCADE)
     titulo_mod = models.CharField(max_length=100)
-    instrucciones = models.CharField(max_length=255)
+    instrucciones = models.CharField(max_length=2000)
     imagen_mod = models.FileField(upload_to='modulo_imagenes/', null=True, blank=True)
     tipo_multimedia = models.CharField(max_length=100)
 
@@ -153,10 +153,10 @@ class Administrador(models.Model):
     correo = models.CharField(max_length=100)
     contrasena = models.CharField(max_length=100)
     username = models.CharField(max_length=100)
-    resultados_evaluaciones = models.ManyToManyField(ResultadoEvaluaciones)
-    evidencias_modulos = models.ManyToManyField(EvidenciaModulos)
-    progreso_actividades = models.ManyToManyField(ProgresoActividades)
-    estadisticas = models.ManyToManyField(Estadisticas)
+    # resultados_evaluaciones = models.ManyToManyField(ResultadoEvaluaciones)
+    # evidencias_modulos = models.ManyToManyField(EvidenciaModulos)
+    # progreso_actividades = models.ManyToManyField(ProgresoActividades)
+    # estadisticas = models.ManyToManyField(Estadisticas)
 
     def __str__(self):
         return self.username
