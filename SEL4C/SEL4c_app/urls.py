@@ -28,8 +28,7 @@ urlpatterns = [
     path('api/user/progress/', UserProgressView.as_view(), name='user-progress'),
     path('api/user/progress/bars/<int:id_usuario>/', UserProgressBarsView.as_view(), name='user-progress-bars'),
     path('api/user/progress/brief/<int:id_usuario>/', UserProgressBriefView.as_view(), name='user-progress-brief'),
-
-    #####   ADMIN  #####
+    # ADMIN OK  
     path('api/admin/', AdminListView.as_view(), name='admin-list'),
     path('api/admin/<int:id_admin>/', AdminDetailView.as_view(), name='admin-detail'),
     # Dashboard

@@ -5,6 +5,8 @@ from django.views import View
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Case, When, IntegerField, Count, Value
+from django.db.models.functions import Cast
 from .models import Usuario, Actividades, Modulos, EvidenciaModulos, Evaluaciones, ResultadoEvaluaciones, Estadisticas, ProgresoActividades, ProgresoUsuarios, Administrador
 from django.shortcuts import get_object_or_404
 from .serializers import UsuarioSerializer, ActividadesSerializer, ModulosSerializer, EvidenciaModulosSerializer, EvaluacionesSerializer, ResultadoEvaluacionesSerializer, EstadisticasSerializer, ProgresoActividadesSerializer, ProgresoUsuariosSerializer, AdministradorSerializer
@@ -252,8 +254,8 @@ class AdminPersonalProgressView(APIView):
         except Usuario.DoesNotExist:
             return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
-        resultado_evaluacion_inicial = ResultadoEvaluaciones.objects.filter(usuario=usuario, tipo_evaluacion="inicial").first()
-        resultado_evaluacion_final = ResultadoEvaluaciones.objects.filter(usuario=usuario, tipo_evaluacion="final").first()
+        resultado_evaluacion_inicial = ResultadoEvaluaciones.objects.filter(id_usuario=usuario, id_evaluacion=1).first()
+        resultado_evaluacion_final = ResultadoEvaluaciones.objects.filter(id_usuario=usuario, id_evaluacion=2).first()
 
         if not resultado_evaluacion_inicial or not resultado_evaluacion_final:
             return Response({"error": "Resultados de evaluación no encontrados"}, status=status.HTTP_404_NOT_FOUND)
@@ -294,10 +296,12 @@ class AdminAgeSegmentationView(APIView):
     def get(self, request):
         age_segmentation = Usuario.objects.annotate(
             age_group=Case(
-                When(edad__range=(18, 24), then="18-24"),
-                When(edad__range=(25, 34), then="25-34"),
-                When(edad__range=(35, 44), then="35-44"),
-                default="45+",
+                When(edad__range=(15, 20), then=Cast(Value("15-20"), output_field=IntegerField())),
+                When(edad__range=(21, 25), then=Cast(Value("21-25"), output_field=IntegerField())),
+                When(edad__range=(26, 30), then=Cast(Value("26-30"), output_field=IntegerField())),
+                When(edad__range=(31, 35), then=Cast(Value("31-35"), output_field=IntegerField())),
+                When(edad__range=(36, 40), then=Cast(Value("36-40"), output_field=IntegerField())),
+                default=Cast(Value("45+"), output_field=IntegerField()),
                 output_field=IntegerField(),
             )
         ).values('age_group').annotate(count=Count('age_group'))
