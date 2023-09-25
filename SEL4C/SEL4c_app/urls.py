@@ -3,7 +3,8 @@ from . import views
 
 from .views import UserProfileView, UserLoginView, UserSignupView, UploadEvaluationResultsView, UploadModuleEvidenceView, ActivityDetailView, ModuleDetailView, AdminDetailView, AdminListView, CreateEvaluationView
 from .views import AdminDashboardView, AdminPersonalProgressView, AdminUsersListView, AdminGenderSegmentationView, AdminAgeSegmentationView, AdminNationalitySegmentationView, AdminEducationSegmentationView
-from .views import UserProgressView, UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView, ActivityCreateView, ModuleCreateView
+from .views import UserProgressView, UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView, ActivityCreateView, ModuleCreateView, ActivityListView, ModuleListView
+from .views import EstadisticasCreateView
 
 urlpatterns = [
     #####   USER   #####
@@ -17,13 +18,17 @@ urlpatterns = [
     path('api/user/progress/initialEvaluation/<int:id_usuario>/', UserProgressInitialEvaluationView.as_view(), name='user-progress-initial-evaluation'),
     path('api/user/progress/finalEvaluation/<int:id_usuario>/', UserProgressFinalEvaluationView.as_view(), name='user-progress-final-evaluation'),
     # Activities OK 
+    path('api/admin/activities/all/', ActivityListView.as_view(), name='activity-list'),
     path('api/admin/activities/<int:id_actividad>/', ActivityDetailView.as_view(), name='activity-detail'),
     path('api/admin/activities/', ActivityCreateView.as_view(), name='activity-detail'),
     # Modules OK
+    path('api/admin/activity/<int:id_actividad>/module/all/', ModuleListView.as_view(), name='module-detail'),
     path('api/admin/activity/<int:id_actividad>/module/<int:id_modulo>/', ModuleDetailView.as_view(), name='module-detail'),
     path('api/admin/activity/<int:id_actividad>/module/', ModuleCreateView.as_view(), name='module-detail'),
     # Evidences OK
     path('api/user/evidences/', UploadModuleEvidenceView.as_view(), name='upload-module-evidence'),
+    #Estadisticas
+    path('api/admin/estadisticas/create/', EstadisticasCreateView.as_view(), name='create-statistics'),
     # Progress App
     path('api/user/progress/', UserProgressView.as_view(), name='user-progress'),
     path('api/user/progress/bars/<int:id_usuario>/', UserProgressBarsView.as_view(), name='user-progress-bars'),

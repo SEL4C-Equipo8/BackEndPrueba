@@ -130,7 +130,6 @@ class UploadEvaluationResultsView(APIView):
         except:
             return Response({"message": "Error al subir el resultado."}, status=status.HTTP_400_BAD_REQUEST)
 
-#REVISAR CUANDO YA HAYA UN MÓDULO CREADO
 #api/user/evidences/
 class UploadModuleEvidenceView(APIView):
     def post(self, request):
@@ -147,6 +146,12 @@ class UploadModuleEvidenceView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#api/admin/activities/all/
+class ActivityListView(APIView):
+    def get(self, request):
+        actividades = Actividades.objects.all()
+        serializer = ActividadesSerializer(actividades, many=True)
+        return Response(serializer.data)
 
 #api/admin/activities/<int:id_actividad>/
 class ActivityDetailView(APIView):
@@ -177,6 +182,13 @@ class ActivityCreateView(APIView):
             return Response({"message": "Actividad publicada con éxito"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#api/admin/activity/<int:id_actividad>/module/all/
+class ModuleListView(APIView):
+    def get(self, request, id_actividad):
+        # Obtén todos los módulos que pertenecen a la actividad especificada
+        modulos = Modulos.objects.filter(id_actividad=id_actividad)
+        serializer = ModulosSerializer(modulos, many=True)
+        return Response(serializer.data)
 
 #api/admin/activity/<int:id_actividad>/module/<int:id_modulo>/
 class ModuleDetailView(APIView):
@@ -320,8 +332,10 @@ class AdminEducationSegmentationView(APIView):
 class UserProgressView(APIView):
     def get(self, request):
         return Response({"mensaje": "API de progreso del usuario"})
+    
 
-# 
+
+#api/user/progress/bars/<int:id_usuario>/
 class UserProgressBarsView(APIView):
     def get(self, request, id_usuario):
         try:
@@ -433,3 +447,19 @@ class UserProgressFinalEvaluationView(APIView):
 
         return Response(data)
     
+
+class EstadisticasCreateView(APIView):
+    def post(self, request):
+        # Obtén los datos del cuerpo de la solicitud JSON
+        data = request.data
+
+        # Serializa los datos para validar y crear una nueva estadística
+        serializer = EstadisticasSerializer(data=data)
+
+        if serializer.is_valid():
+            # Guarda la nueva estadística en la base de datos
+            serializer.save()
+            return Response({"message": "Estadísticas creadas exitosamente"}, status=status.HTTP_201_CREATED)
+        else:
+            # Si la validación falla, devuelve los errores
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
