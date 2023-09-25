@@ -30,7 +30,7 @@ urlpatterns = [
     #Estadisticas
     path('api/admin/estadisticas/create/', EstadisticasCreateView.as_view(), name='create-statistics'),
     # Progress App
-    path('api/user/progress/', UserProgressView.as_view(), name='user-progress'),
+    
     path('api/user/progress/bars/<int:id_usuario>/', UserProgressBarsView.as_view(), name='user-progress-bars'),
     path('api/user/progress/brief/<int:id_usuario>/', UserProgressBriefView.as_view(), name='user-progress-brief'),
     # ADMIN OK  

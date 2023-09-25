@@ -329,12 +329,6 @@ class AdminEducationSegmentationView(APIView):
         education_segmentation = Usuario.objects.values('grado_ac').annotate(count=Count('grado_ac'))
         return Response({"education_segmentation": education_segmentation})
 
-class UserProgressView(APIView):
-    def get(self, request):
-        return Response({"mensaje": "API de progreso del usuario"})
-    
-
-
 #api/user/progress/bars/<int:id_usuario>/
 class UserProgressBarsView(APIView):
     def get(self, request, id_usuario):
@@ -357,7 +351,11 @@ class UserProgressBarsView(APIView):
         }
 
         return Response(data)
+    
 
+    
+
+#api/user/progress/brief/<int:id_usuario>/
 class UserProgressBriefView(APIView):
     def get(self, request, id_usuario):
         try:
