@@ -221,7 +221,7 @@ class ModuleCreateView(APIView):
             return Response({"message": "Módulo agregado con éxito"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+#api/admin/
 class AdminListView(APIView):
     def get(self, request):
         administradores = Administrador.objects.all()
@@ -236,6 +236,7 @@ class AdminListView(APIView):
             return Response({"mensaje": "Administrador creado exitosamente"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#api/admin/<int:id_admin>/
 class AdminDetailView(APIView):
     def get(self, request, id_admin):
         admin = get_object_or_404(Administrador, id_admin=id_admin)
@@ -255,10 +256,12 @@ class AdminDetailView(APIView):
         admin.delete()
         return Response({"mensaje": "Administrador eliminado exitosamente"})
 
+#api/progress/
 class AdminDashboardView(APIView):
     def get(self, request):
         return Response({"mensaje": "Panel de control del administrador"})
 
+#api/admin/personalProgress/<int:user_id>/
 class AdminPersonalProgressView(APIView):
     def get(self, request, user_id):
         try:
@@ -293,17 +296,20 @@ class AdminPersonalProgressView(APIView):
 
         return Response(data)
 
+#api/admin/users/
 class AdminUsersListView(APIView):
     def get(self, request):
         users = Usuario.objects.all()
         serializer = UsuarioSerializer(users, many=True)
         return Response({"users": serializer.data})
 
+#api/admin/segmentation/gender/
 class AdminGenderSegmentationView(APIView):
     def get(self, request):
         gender_segmentation = Usuario.objects.values('genero').annotate(count=Count('genero'))
         return Response({"gender_segmentation": gender_segmentation})
 
+#api/segmentation/admin/age/
 class AdminAgeSegmentationView(APIView):
     def get(self, request):
         age_segmentation = Usuario.objects.annotate(
@@ -319,11 +325,13 @@ class AdminAgeSegmentationView(APIView):
         ).values('age_group').annotate(count=Count('age_group'))
         return Response({"age_segmentation": age_segmentation})
 
+#api/segmentation/admin/nationality/
 class AdminNationalitySegmentationView(APIView):
     def get(self, request):
         nationality_segmentation = Usuario.objects.values('pais').annotate(count=Count('pais'))
         return Response({"nationality_segmentation": nationality_segmentation})
 
+#api/segmentation/admin/education/
 class AdminEducationSegmentationView(APIView):
     def get(self, request):
         education_segmentation = Usuario.objects.values('grado_ac').annotate(count=Count('grado_ac'))
@@ -479,7 +487,7 @@ class UserProgressFinalEvaluationView(APIView):
 
         return Response(data)
     
-
+#api/admin/estadisticas/create/
 class EstadisticasCreateView(APIView):
     def post(self, request):
         # Obtén los datos del cuerpo de la solicitud JSON
@@ -496,7 +504,7 @@ class EstadisticasCreateView(APIView):
             # Si la validación falla, devuelve los errores
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-
+#api/user/progress/user/<int:id_usuario>/
 class UserProgressView(APIView):
     def get_object(self, id_usuario):
         try:
