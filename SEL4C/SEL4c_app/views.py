@@ -221,6 +221,27 @@ class ModuleCreateView(APIView):
             return Response({"message": "Módulo agregado con éxito"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#api/admin/login/
+class AdminLoginView(APIView):
+    def post(self, request):
+        # Obtener el correo electrónico y la contraseña de la solicitud POST
+        correo = request.data.get('correo')
+        contrasena = request.data.get('contrasena')
+
+        try:
+            # Buscar al administrador por correo electrónico en la tabla Administrador
+            admin = Administrador.objects.get(correo=correo)
+
+            # Verificar la contraseña
+            if admin.contrasena == contrasena:
+                return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
+            else:
+                # La contraseña es incorrecta
+                return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
+        except Administrador.DoesNotExist:
+            # El administrador no existe en la base de datos
+            return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
+
 #api/admin/
 class AdminListView(APIView):
     def get(self, request):

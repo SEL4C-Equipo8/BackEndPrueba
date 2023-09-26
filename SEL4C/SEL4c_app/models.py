@@ -153,10 +153,6 @@ class Administrador(models.Model):
     correo = models.CharField(max_length=100)
     contrasena = models.CharField(max_length=100)
     username = models.CharField(max_length=100)
-    # resultados_evaluaciones = models.ManyToManyField(ResultadoEvaluaciones)
-    # evidencias_modulos = models.ManyToManyField(EvidenciaModulos)
-    # progreso_actividades = models.ManyToManyField(ProgresoActividades)
-    # estadisticas = models.ManyToManyField(Estadisticas)
 
     def __str__(self):
         return self.username
