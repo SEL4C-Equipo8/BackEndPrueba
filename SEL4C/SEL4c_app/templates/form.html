@@ -1,0 +1,8 @@
+{%load static%}
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    {{ form.media}}
+
+    <button type="submit">Submit</button>
+</form>
