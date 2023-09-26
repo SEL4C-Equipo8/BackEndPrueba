@@ -3,8 +3,8 @@ from . import views
 
 from .views import UserProfileView, UserLoginView, UserSignupView, UploadEvaluationResultsView, UploadModuleEvidenceView, ActivityDetailView, ModuleDetailView, AdminDetailView, AdminListView, CreateEvaluationView
 from .views import AdminDashboardView, AdminPersonalProgressView, AdminUsersListView, AdminGenderSegmentationView, AdminAgeSegmentationView, AdminNationalitySegmentationView, AdminEducationSegmentationView
-from .views import UserProgressView, UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView, ActivityCreateView, ModuleCreateView, ActivityListView, ModuleListView
-from .views import EstadisticasCreateView
+from .views import UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView, ActivityCreateView, ModuleCreateView, ActivityListView, ModuleListView
+from .views import EstadisticasCreateView, UserProgressActivtiesView
 
 urlpatterns = [
     #####   USER   #####
@@ -30,7 +30,7 @@ urlpatterns = [
     #Estadisticas
     path('api/admin/estadisticas/create/', EstadisticasCreateView.as_view(), name='create-statistics'),
     # Progress App
-    
+    path('api/user/progress/activities/<int:id_usuario>/', UserProgressActivtiesView.as_view(), name='user-progress-activities'),
     path('api/user/progress/bars/<int:id_usuario>/', UserProgressBarsView.as_view(), name='user-progress-bars'),
     path('api/user/progress/brief/<int:id_usuario>/', UserProgressBriefView.as_view(), name='user-progress-brief'),
     # ADMIN OK  

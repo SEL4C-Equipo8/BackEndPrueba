@@ -352,8 +352,42 @@ class UserProgressBarsView(APIView):
 
         return Response(data)
     
+#api/user/progress/activities/<int:id_usuario>/
+class UserProgressActivtiesView(APIView):
+    def post(self, request, id_usuario):
+        try:
+            usuario = Usuario.objects.get(id_usuario=id_usuario)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
-    
+        data = request.data
+
+        # Validación de datos
+        if 'actividad1' not in data or 'actividad2' not in data or 'actividad3' not in data or 'actividad4' not in data:
+            return Response({"error": "Los campos de actividad deben estar presentes"}, status=status.HTTP_400_BAD_REQUEST)
+
+        actividad1 = data.get('actividad1')
+        actividad2 = data.get('actividad2')
+        actividad3 = data.get('actividad3')
+        actividad4 = data.get('actividad4')
+
+        # Crear o actualizar el progreso de actividades
+        progreso_actividades, created = ProgresoActividades.objects.update_or_create(
+            id_usuario=usuario,
+            defaults={
+                "actividad1": actividad1,
+                "actividad2": actividad2,
+                "actividad3": actividad3,
+                "actividad4": actividad4,
+            }
+        )
+
+        return Response({"message": "Progreso de actividades actualizado exitosamente"}, status=status.HTTP_200_OK)
+
+    def put(self, request, id_usuario):
+        return self.post(request, id_usuario)
+
+
 
 #api/user/progress/brief/<int:id_usuario>/
 class UserProgressBriefView(APIView):
