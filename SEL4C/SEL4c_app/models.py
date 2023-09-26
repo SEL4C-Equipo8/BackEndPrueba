@@ -64,7 +64,7 @@ class Actividades(models.Model):
 # ==== TABLA MODULOS ====
 class Modulos(models.Model):
     id_modulo = models.AutoField(primary_key=True)
-    id_actividad = models.ForeignKey(Actividades, on_delete=models.CASCADE)
+    id_actividad = models.ForeignKey(Actividades, on_delete=models.CASCADE, db_column='id_actividad')
     titulo_mod = models.CharField(max_length=100)
     instrucciones = models.CharField(max_length=2000)
     imagen_mod = models.FileField(upload_to='modulo_imagenes/', null=True, blank=True)
@@ -77,7 +77,7 @@ class Modulos(models.Model):
 # ==== TABLA EVIDENCIAS MODULOS ====
 class EvidenciaModulos(models.Model):
     id_respuesta = models.AutoField(primary_key=True)
-    id_modulo = models.OneToOneField(Modulos, on_delete=models.CASCADE)
+    id_modulo = models.OneToOneField(Modulos, on_delete=models.CASCADE, db_column='id_modulo')
     archivo_res = models.FileField(upload_to='evidencia_archivos/', null=True, blank=True)
 
     def __str__(self):
@@ -112,7 +112,7 @@ class ResultadoEvaluaciones(models.Model):
 # ==== TABLA ESTADISTICAS ====
 class Estadisticas(models.Model):
     id_estadistica = models.AutoField(primary_key=True)
-    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
     actividades = models.IntegerField()
     evidencias = models.IntegerField()
     progreso = models.IntegerField()
@@ -124,7 +124,7 @@ class Estadisticas(models.Model):
 # ==== TABLA PROGRESO ACTIVIDADES ====
 class ProgresoActividades(models.Model):
     id_progreso = models.AutoField(primary_key=True)
-    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
     actividad1 = models.BooleanField(default=False)
     actividad2 = models.BooleanField(default=False)
     actividad3 = models.BooleanField(default=False)
@@ -137,9 +137,9 @@ class ProgresoActividades(models.Model):
 # ==== TABLA PROGRESO USUARIOS ====
 class ProgresoUsuarios(models.Model):
     id_progreso_usuario = models.AutoField(primary_key=True)
-    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
-    id_actividad = models.ForeignKey(Actividades, on_delete=models.CASCADE)
-    id_modulo = models.ForeignKey(Modulos, on_delete=models.CASCADE)
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
+    id_actividad = models.ForeignKey(Actividades, on_delete=models.CASCADE, db_column='id_actividad')
+    id_modulo = models.ForeignKey(Modulos, on_delete=models.CASCADE, db_column='id_modulo')
     estado_actividad = models.BooleanField(default=False)
     estado_modulo = models.BooleanField(default=False)
 
