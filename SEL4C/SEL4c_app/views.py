@@ -495,3 +495,36 @@ class EstadisticasCreateView(APIView):
         else:
             # Si la validación falla, devuelve los errores
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class UserProgressView(APIView):
+    def get_object(self, id_usuario):
+        try:
+            return ProgresoUsuarios.objects.get(id_usuario=id_usuario)
+        except ProgresoUsuarios.DoesNotExist:
+            return None
+
+    def post(self, request, id_usuario):
+        try:
+            # Verifica si el usuario existe antes de crear el registro de progreso
+            usuario = Usuario.objects.get(pk=id_usuario)
+        except Usuario.DoesNotExist:
+            return Response({"error": f"El usuario con ID {id_usuario} no existe"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = ProgresoUsuariosSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save(id_usuario=usuario)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, id_usuario):
+        progreso_usuario = self.get_object(id_usuario)
+        if progreso_usuario is not None:
+            serializer = ProgresoUsuariosSerializer(progreso_usuario, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": f"El progreso del usuario con ID {id_usuario} no existe"}, status=status.HTTP_404_NOT_FOUND)

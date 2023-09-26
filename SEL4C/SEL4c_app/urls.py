@@ -3,7 +3,7 @@ from . import views
 
 from .views import UserProfileView, UserLoginView, UserSignupView, UploadEvaluationResultsView, UploadModuleEvidenceView, ActivityDetailView, ModuleDetailView, AdminDetailView, AdminListView, CreateEvaluationView
 from .views import AdminDashboardView, AdminPersonalProgressView, AdminUsersListView, AdminGenderSegmentationView, AdminAgeSegmentationView, AdminNationalitySegmentationView, AdminEducationSegmentationView
-from .views import UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView, ActivityCreateView, ModuleCreateView, ActivityListView, ModuleListView
+from .views import UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView, ActivityCreateView, ModuleCreateView, ActivityListView, ModuleListView, UserProgressView
 from .views import EstadisticasCreateView, UserProgressActivtiesView
 
 urlpatterns = [
@@ -44,4 +44,6 @@ urlpatterns = [
     path('api/segmentation/admin/age/', AdminAgeSegmentationView.as_view(), name='admin-age-segmentation'),
     path('api/segmentation/admin/nationality/', AdminNationalitySegmentationView.as_view(), name='admin-nationality-segmentation'),
     path('api/segmentation/admin/education/', AdminEducationSegmentationView.as_view(), name='admin-education-segmentation'),
+    # Progreso Usuario
+    path('api/user/progress/user/<int:id_usuario>/', UserProgressView.as_view(), name='user-progress'),
 ]
