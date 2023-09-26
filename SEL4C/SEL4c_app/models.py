@@ -70,7 +70,7 @@ class Modulos(models.Model):
     imagen_mod = models.FileField(upload_to='modulo_imagenes/', null=True, blank=True)
     tipo_multimedia = models.CharField(max_length=100)
 
-    def __str__(self):
+    def _str_(self):
         return self.titulo_mod
 
 
