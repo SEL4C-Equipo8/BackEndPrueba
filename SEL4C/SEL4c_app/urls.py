@@ -11,6 +11,7 @@ urlpatterns = [
     # User (login, signup, profile) OK
     path('api/user/profile/<int:user_id>/', UserProfileView.as_view(), name='user-profile'),
     path('api/user/login/', UserLoginView.as_view(), name='user-login'),
+    #path('api/user/logout/', UserLogoutView.as_view(), name='user-login'),
     path('api/user/signup/', UserSignupView.as_view(), name='user-signup'),
     #  Evaluations OK
     path('api/user/evaluations/create/', CreateEvaluationView.as_view(), name='upload-evaluation-results'),
@@ -37,6 +38,7 @@ urlpatterns = [
     path('api/user/progress/brief/<int:id_usuario>/', UserProgressBriefView.as_view(), name='user-progress-brief'),
     # ADMIN OK  
     path('api/admin/login/',AdminLoginView.as_view(), name='admin-login'),
+    #path('api/admin/logout/',AdminLogoutView.as_view(), name='admin-login'),
     path('api/admin/', AdminListView.as_view(), name='admin-list'),
     path('api/admin/<int:id_admin>/', AdminDetailView.as_view(), name='admin-detail'),
     # Dashboard

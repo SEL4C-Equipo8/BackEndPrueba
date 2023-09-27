@@ -16,6 +16,8 @@ from .forms import ModulesForm
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib import messages
+# JWT Authentication
+from rest_framework_simplejwt.tokens import RefreshToken
 
 #api/user/profile/<int:user_id>/
 class UserProfileView(APIView):
@@ -39,22 +41,28 @@ class UserLoginView(APIView):
         # Obtener el correo electrónico y la contraseña de la solicitud POST
         email = request.data.get('email')
         password = request.data.get('contrasena')
+        print(f"Email: {email}, Password: {password}")
 
         try:
             # Buscar al usuario por correo electrónico en la tabla personalizada
             user = Usuario.objects.get(email=email)
+            print(f"Email: {email}, Password: {password}")
 
             # Verificar la contraseña
             if user.contrasena == password:
-
-
-                return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
+                #return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
+                # Las credenciales son válidas, generamos tokens JWT
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                    }, status=status.HTTP_200_OK)
             else:
                 # La contraseña es incorrecta
-                return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({"message": "Credenciales inválidas1"}, status=status.HTTP_401_UNAUTHORIZED)
         except Usuario.DoesNotExist:
             # El usuario no existe en la base de datos
-            return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"message": "Credenciales inválidas 2"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 #api/user/signup/
@@ -215,7 +223,7 @@ class ModuleDetailView(APIView):
         modulo.delete()
         return Response({"message": "Módulo eliminado con éxito"})
     
-#api/admin/activity/<int:id_actividad>/module/  
+#api/admin/activity/<int:id_actividad>/module/create/ 
 #@csrf_exempt
 def ModuleCreateView(request, id_actividad):
     form = ModulesForm()
@@ -251,7 +259,13 @@ class AdminLoginView(APIView):
 
             # Verificar la contraseña
             if admin.contrasena == contrasena:
-                return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
+                # Las credenciales son válidas, generamos tokens JWT
+                refresh = RefreshToken.for_admin(admin)
+                #return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
+                return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                }, status=status.HTTP_200_OK)
             else:
                 # La contraseña es incorrecta
                 return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
