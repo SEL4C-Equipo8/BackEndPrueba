@@ -11,6 +11,10 @@ from .models import Usuario, Actividades, Modulos, EvidenciaModulos, Evaluacione
 from django.shortcuts import get_object_or_404
 from .serializers import UsuarioSerializer, ActividadesSerializer, ModulosSerializer, EvidenciaModulosSerializer, EvaluacionesSerializer, ResultadoEvaluacionesSerializer, EstadisticasSerializer, ProgresoActividadesSerializer, ProgresoUsuariosSerializer, AdministradorSerializer
 from django.contrib.auth.hashers import check_password
+from .forms import ModulesForm
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.contrib import messages
 
 #api/user/profile/<int:user_id>/
 class UserProfileView(APIView):
@@ -210,16 +214,28 @@ class ModuleDetailView(APIView):
         modulo.delete()
         return Response({"message": "Módulo eliminado con éxito"})
     
-#api/admin/activity/<int:id_actividad>/module/  
-class ModuleCreateView(APIView):
-    def post(self, request, id_actividad):
-        data = request.data
-        data['id_actividad'] = id_actividad  # Asigna el ID de la actividad desde la URL a los datos
-        serializer = ModulosSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Módulo agregado con éxito"})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#api/admin/activity/<int:id_actividad>/module/
+@csrf_exempt
+def ModuleCreateView(request, id_actividad):
+    form = ModulesForm()
+    if request.method == 'POST':
+        print(request.body)
+        form = ModulesForm(request.POST)
+        if form.is_valid():
+            titulo_mod = form.cleaned_data['titulo_mod']
+            instrucciones = form.cleaned_data['instrucciones']
+            imagen_mod = form.cleaned_data['imagen_mod']
+            tipo_multimedia = form.cleaned_data['tipo_multimedia']
+            modulo = Modulos(id_actividad_id=id_actividad, titulo_mod=titulo_mod, instrucciones=instrucciones, imagen_mod=imagen_mod, tipo_multimedia=tipo_multimedia)
+            modulo.save()
+            messages.success(request, 'Modulo creado')
+            form = ModulesForm()
+            #return render(request, 'form.html', {'form': form})
+        # HTTP alert and redirect to the same page
+        return HttpResponse('<script>alert("Modulo creado");window.location.href="/api/admin/activity/'+str(id_actividad)+'/module/create/";</script>')
+    else:
+        form = ModulesForm()
+    return render(request, 'form.html', {'form': form})
 
 
 class AdminListView(APIView):

@@ -39,7 +39,23 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'SEL4c_app',
+    'ckeditor',
 ]
+
+CKEDITOR_CONFIGS = {
+    'webEditor': {
+        'toolbar': [
+            ['Bold', 'Italic', 'Underline', '-','CopyFormatting', 'RemoveFormat', 'SelectAll'],
+            ['NumberedList', 'BulletedList'],
+            ['Link', 'Unlink'],
+            ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+            ['Source'],
+            ['Undo', 'Redo', 'Find', 'Replace'],
+        ],
+        'height': 350,
+        'width': 1000,
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

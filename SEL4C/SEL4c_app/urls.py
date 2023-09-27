@@ -24,7 +24,9 @@ urlpatterns = [
     # Modules OK
     path('api/admin/activity/<int:id_actividad>/module/all/', ModuleListView.as_view(), name='module-detail'),
     path('api/admin/activity/<int:id_actividad>/module/<int:id_modulo>/', ModuleDetailView.as_view(), name='module-detail'),
-    path('api/admin/activity/<int:id_actividad>/module/', ModuleCreateView.as_view(), name='module-detail'),
+    path('api/admin/activity/<int:id_actividad>/module/create/', views.ModuleCreateView, name='module-detail'),
+            #OLD VIEW
+            # path('api/admin/activity/<int:id_actividad>/module/', ModuleCreateView.as_view(), name='module-detail'),
     # Evidences OK
     path('api/user/evidences/', UploadModuleEvidenceView.as_view(), name='upload-module-evidence'),
     #Estadisticas
