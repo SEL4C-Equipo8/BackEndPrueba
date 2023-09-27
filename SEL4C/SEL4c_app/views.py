@@ -1,3 +1,4 @@
+
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
@@ -214,8 +215,8 @@ class ModuleDetailView(APIView):
         modulo.delete()
         return Response({"message": "Módulo eliminado con éxito"})
     
-#api/admin/activity/<int:id_actividad>/module/
-@csrf_exempt
+#api/admin/activity/<int:id_actividad>/module/  
+#@csrf_exempt
 def ModuleCreateView(request, id_actividad):
     form = ModulesForm()
     if request.method == 'POST':
@@ -237,7 +238,28 @@ def ModuleCreateView(request, id_actividad):
         form = ModulesForm()
     return render(request, 'form.html', {'form': form})
 
+#api/admin/login/
+class AdminLoginView(APIView):
+    def post(self, request):
+        # Obtener el correo electrónico y la contraseña de la solicitud POST
+        correo = request.data.get('correo')
+        contrasena = request.data.get('contrasena')
 
+        try:
+            # Buscar al administrador por correo electrónico en la tabla Administrador
+            admin = Administrador.objects.get(correo=correo)
+
+            # Verificar la contraseña
+            if admin.contrasena == contrasena:
+                return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
+            else:
+                # La contraseña es incorrecta
+                return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
+        except Administrador.DoesNotExist:
+            # El administrador no existe en la base de datos
+            return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
+
+#api/admin/
 class AdminListView(APIView):
     def get(self, request):
         administradores = Administrador.objects.all()
@@ -252,6 +274,7 @@ class AdminListView(APIView):
             return Response({"mensaje": "Administrador creado exitosamente"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#api/admin/<int:id_admin>/
 class AdminDetailView(APIView):
     def get(self, request, id_admin):
         admin = get_object_or_404(Administrador, id_admin=id_admin)
@@ -271,10 +294,12 @@ class AdminDetailView(APIView):
         admin.delete()
         return Response({"mensaje": "Administrador eliminado exitosamente"})
 
+#api/progress/
 class AdminDashboardView(APIView):
     def get(self, request):
         return Response({"mensaje": "Panel de control del administrador"})
 
+#api/admin/personalProgress/<int:user_id>/
 class AdminPersonalProgressView(APIView):
     def get(self, request, user_id):
         try:
@@ -309,17 +334,20 @@ class AdminPersonalProgressView(APIView):
 
         return Response(data)
 
+#api/admin/users/
 class AdminUsersListView(APIView):
     def get(self, request):
         users = Usuario.objects.all()
         serializer = UsuarioSerializer(users, many=True)
         return Response({"users": serializer.data})
 
+#api/admin/segmentation/gender/
 class AdminGenderSegmentationView(APIView):
     def get(self, request):
         gender_segmentation = Usuario.objects.values('genero').annotate(count=Count('genero'))
         return Response({"gender_segmentation": gender_segmentation})
 
+#api/segmentation/admin/age/
 class AdminAgeSegmentationView(APIView):
     def get(self, request):
         age_segmentation = Usuario.objects.annotate(
@@ -335,21 +363,17 @@ class AdminAgeSegmentationView(APIView):
         ).values('age_group').annotate(count=Count('age_group'))
         return Response({"age_segmentation": age_segmentation})
 
+#api/segmentation/admin/nationality/
 class AdminNationalitySegmentationView(APIView):
     def get(self, request):
         nationality_segmentation = Usuario.objects.values('pais').annotate(count=Count('pais'))
         return Response({"nationality_segmentation": nationality_segmentation})
 
+#api/segmentation/admin/education/
 class AdminEducationSegmentationView(APIView):
     def get(self, request):
         education_segmentation = Usuario.objects.values('grado_ac').annotate(count=Count('grado_ac'))
         return Response({"education_segmentation": education_segmentation})
-
-class UserProgressView(APIView):
-    def get(self, request):
-        return Response({"mensaje": "API de progreso del usuario"})
-    
-
 
 #api/user/progress/bars/<int:id_usuario>/
 class UserProgressBarsView(APIView):
@@ -373,7 +397,45 @@ class UserProgressBarsView(APIView):
         }
 
         return Response(data)
+    
+#api/user/progress/activities/<int:id_usuario>/
+class UserProgressActivtiesView(APIView):
+    def post(self, request, id_usuario):
+        try:
+            usuario = Usuario.objects.get(id_usuario=id_usuario)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
+        data = request.data
+
+        # Validación de datos
+        if 'actividad1' not in data or 'actividad2' not in data or 'actividad3' not in data or 'actividad4' not in data:
+            return Response({"error": "Los campos de actividad deben estar presentes"}, status=status.HTTP_400_BAD_REQUEST)
+
+        actividad1 = data.get('actividad1')
+        actividad2 = data.get('actividad2')
+        actividad3 = data.get('actividad3')
+        actividad4 = data.get('actividad4')
+
+        # Crear o actualizar el progreso de actividades
+        progreso_actividades, created = ProgresoActividades.objects.update_or_create(
+            id_usuario=usuario,
+            defaults={
+                "actividad1": actividad1,
+                "actividad2": actividad2,
+                "actividad3": actividad3,
+                "actividad4": actividad4,
+            }
+        )
+
+        return Response({"message": "Progreso de actividades actualizado exitosamente"}, status=status.HTTP_200_OK)
+
+    def put(self, request, id_usuario):
+        return self.post(request, id_usuario)
+
+
+
+#api/user/progress/brief/<int:id_usuario>/
 class UserProgressBriefView(APIView):
     def get(self, request, id_usuario):
         try:
@@ -463,7 +525,7 @@ class UserProgressFinalEvaluationView(APIView):
 
         return Response(data)
     
-
+#api/admin/estadisticas/create/
 class EstadisticasCreateView(APIView):
     def post(self, request):
         # Obtén los datos del cuerpo de la solicitud JSON
@@ -479,3 +541,36 @@ class EstadisticasCreateView(APIView):
         else:
             # Si la validación falla, devuelve los errores
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+#api/user/progress/user/<int:id_usuario>/
+class UserProgressView(APIView):
+    def get_object(self, id_usuario):
+        try:
+            return ProgresoUsuarios.objects.get(id_usuario=id_usuario)
+        except ProgresoUsuarios.DoesNotExist:
+            return None
+
+    def post(self, request, id_usuario):
+        try:
+            # Verifica si el usuario existe antes de crear el registro de progreso
+            usuario = Usuario.objects.get(pk=id_usuario)
+        except Usuario.DoesNotExist:
+            return Response({"error": f"El usuario con ID {id_usuario} no existe"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = ProgresoUsuariosSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save(id_usuario=usuario)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, id_usuario):
+        progreso_usuario = self.get_object(id_usuario)
+        if progreso_usuario is not None:
+            serializer = ProgresoUsuariosSerializer(progreso_usuario, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": f"El progreso del usuario con ID {id_usuario} no existe"}, status=status.HTTP_404_NOT_FOUND)

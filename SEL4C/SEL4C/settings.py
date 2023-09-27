@@ -143,3 +143,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # Autenticación de usuario por defecto
 ]
+
+CKEDITOR_CONFIGS = {
+    'webEditor': {
+        'toolbar': [
+            ['Bold', 'Italic', 'Underline'],
+            ['NumberedList', 'BulletedList'],
+            ['Link'],
+            ['RemoveFormat'],
+        ],
+        'height': 300,
+        'width': 1000,
+        # ... otras configuraciones si es necesario
+    },
+}
