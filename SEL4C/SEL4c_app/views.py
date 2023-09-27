@@ -220,7 +220,7 @@ class ModuleDetailView(APIView):
 def ModuleCreateView(request, id_actividad):
     form = ModulesForm()
     if request.method == 'POST':
-        print(request.body)
+        #print(request.body)
         form = ModulesForm(request.POST)
         if form.is_valid():
             titulo_mod = form.cleaned_data['titulo_mod']
@@ -234,8 +234,8 @@ def ModuleCreateView(request, id_actividad):
             #return render(request, 'form.html', {'form': form})
         # HTTP alert and redirect to the same page
         return HttpResponse('<script>alert("Modulo creado");window.location.href="/api/admin/activity/'+str(id_actividad)+'/module/create/";</script>')
-    else:
-        form = ModulesForm()
+    #else:
+        #form = ModulesForm()
     return render(request, 'form.html', {'form': form})
 
 #api/admin/login/
