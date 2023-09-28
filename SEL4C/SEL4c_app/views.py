@@ -1,6 +1,6 @@
 
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate, login
+#from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 from django.views import View
 from rest_framework.views import APIView
@@ -39,16 +39,21 @@ class UserLoginView(APIView):
         # Obtener el correo electrónico y la contraseña de la solicitud POST
         email = request.data.get('email')
         password = request.data.get('contrasena')
-
         try:
             # Buscar al usuario por correo electrónico en la tabla personalizada
             user = Usuario.objects.get(email=email)
-
             # Verificar la contraseña
             if user.contrasena == password:
-
-
-                return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
+                    #return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
+                    # Las credenciales son válidas, generamos tokens JWT
+                    # refresh = RefreshToken.for_user(user)
+                    # print("despues")
+                    # return Response({
+                    #     'refresh': str(refresh),
+                    #     'access': str(refresh.access_token),
+                    #     }, status=status.HTTP_200_OK)
+                # Succesful
+                return Response({"message":"Credenciales validas"}, status=status.HTTP_200_OK)
             else:
                 # La contraseña es incorrecta
                 return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -220,7 +225,6 @@ class ModuleDetailView(APIView):
 def ModuleCreateView(request, id_actividad):
     form = ModulesForm()
     if request.method == 'POST':
-        #print(request.body)
         form = ModulesForm(request.POST)
         if form.is_valid():
             titulo_mod = form.cleaned_data['titulo_mod']
@@ -251,7 +255,14 @@ class AdminLoginView(APIView):
 
             # Verificar la contraseña
             if admin.contrasena == contrasena:
-                return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
+                    # # Las credenciales son válidas, generamos tokens JWT
+                    # refresh = RefreshToken.for_admin(admin)
+                    # #return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
+                    # return Response({
+                    # 'refresh': str(refresh),
+                    # 'access': str(refresh.access_token),
+                    # }, status=status.HTTP_200_OK)
+                return Response({"message":"Credenciales validas"}, status=status.HTTP_200_OK)
             else:
                 # La contraseña es incorrecta
                 return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
