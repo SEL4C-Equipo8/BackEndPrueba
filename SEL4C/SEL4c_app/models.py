@@ -39,6 +39,10 @@ class Usuario(models.Model):
     edad = models.IntegerField()
     pais = models.CharField(max_length=100, choices=PAISES)
 
+
+
+
+
     def __str__(self):
         return self.username
 

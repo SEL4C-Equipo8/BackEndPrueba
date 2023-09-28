@@ -49,4 +49,6 @@ urlpatterns = [
     path('api/segmentation/admin/education/', AdminEducationSegmentationView.as_view(), name='admin-education-segmentation'),
     # Progreso Usuario
     path('api/user/progress/user/<int:id_usuario>/', UserProgressView.as_view(), name='user-progress'),
+
+    
 ]
