@@ -4,7 +4,7 @@ from . import views
 from .views import UserProfileView, UserLoginView, UserSignupView, UploadEvaluationResultsView, UploadModuleEvidenceView, ActivityDetailView, ModuleDetailView, AdminDetailView, AdminListView, CreateEvaluationView
 from .views import AdminLoginView, AdminDashboardView, AdminPersonalProgressView, AdminUsersListView, AdminGenderSegmentationView, AdminAgeSegmentationView, AdminNationalitySegmentationView, AdminEducationSegmentationView
 from .views import UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView, ActivityCreateView, ModuleCreateView, ActivityListView, ModuleListView, UserProgressView
-from .views import EstadisticasCreateView, UserProgressActivtiesView
+from .views import EstadisticasCreateView, UserProgressActivtiesView, AdminSignupView, AdminLogoutView
 
 urlpatterns = [
     #####   USER   #####
@@ -36,9 +36,12 @@ urlpatterns = [
     path('api/user/progress/bars/<int:id_usuario>/', UserProgressBarsView.as_view(), name='user-progress-bars'),
     path('api/user/progress/brief/<int:id_usuario>/', UserProgressBriefView.as_view(), name='user-progress-brief'),
     # ADMIN OK  
+    path('api/admin/signup/', AdminSignupView.as_view(), name='admin-signup'),
     path('api/admin/login/',AdminLoginView.as_view(), name='admin-login'),
+    path('api/admin/logout/', AdminLogoutView.as_view(), name='admin-logout'),
     path('api/admin/', AdminListView.as_view(), name='admin-list'),
     path('api/admin/<int:id_admin>/', AdminDetailView.as_view(), name='admin-detail'),
+    
     # Dashboard
     path('api/progress/', AdminDashboardView.as_view(), name='admin-dashboard'),
     path('api/admin/personalProgress/<int:user_id>/', AdminPersonalProgressView.as_view(), name='admin-personal-progress'),
@@ -50,5 +53,7 @@ urlpatterns = [
     # Progreso Usuario
     path('api/user/progress/user/<int:id_usuario>/', UserProgressView.as_view(), name='user-progress'),
 
+    #Who am I?
+    path('api/whoami/', views.whoami, name='whoami')
     
 ]

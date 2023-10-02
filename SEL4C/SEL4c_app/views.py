@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404
 from .serializers import UsuarioSerializer, ActividadesSerializer, ModulosSerializer, EvidenciaModulosSerializer, EvaluacionesSerializer, ResultadoEvaluacionesSerializer, EstadisticasSerializer, ProgresoActividadesSerializer, ProgresoUsuariosSerializer, AdministradorSerializer
 from django.contrib.auth.hashers import check_password
 from .forms import ModulesForm
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
 
@@ -244,14 +244,18 @@ class AdminLoginView(APIView):
         # Obtener el correo electrónico y la contraseña de la solicitud POST
         correo = request.data.get('correo')
         contrasena = request.data.get('contrasena')
-
         try:
             # Buscar al administrador por correo electrónico en la tabla Administrador
             admin = Administrador.objects.get(correo=correo)
-
+            print (admin)
             # Verificar la contraseña
             if admin.contrasena == contrasena:
-                return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
+                # Definicion de cookies
+                request.session.flush()
+                response = redirect('whoami')
+                response.set_cookie("id_admin", str(admin.pk))
+                #return Response({"message": "Inicio de sesión exitosa", "Cookie":cookie_value}, status=status.HTTP_200_OK)
+                return response
             else:
                 # La contraseña es incorrecta
                 return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -259,6 +263,48 @@ class AdminLoginView(APIView):
             # El administrador no existe en la base de datos
             return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
 
+#### AUXILIARES PARA LOGIN ADMIN Y COOKIES
+class AdminSignupView(APIView):
+    def post(self, request, *args, **kwargs):
+        # Obtenemos los datos del usuario desde la solicitud POST
+        data = request.data
+
+        # Serializamos los datos para validar y crear el usuario
+        serializer = AdministradorSerializer(data=data)
+
+        if serializer.is_valid():
+            # Creamos el usuario
+            administrador = serializer.save()
+
+            # Devolvemos una respuesta exitosa
+            response_data = {
+                "message": "Administrador registrado con éxito"
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        else:
+            # Si los datos no son válidos, devolvemos los errores
+            errors = serializer.errors
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        
+def whoami(request):
+    context = {}
+    print(request.COOKIES)
+    if 'id_admin' in request.COOKIES:
+        admin = request.COOKIES['id_admin']
+        user = Administrador.objects.get(id_admin=admin)
+        #context['message'] = 'Eres el usuario admin ' + str(admin)
+        context['id_admin'] = admin
+
+        return HttpResponse('<script>alert("Eres el admin '+str(admin)+'");window.location.href="/api/admin/";</script>')
+    else:
+        return HttpResponse('<script>alert("No hay usuario admin");window.location.href="/api/admin/login/";</script>')
+    
+class AdminLogoutView(APIView):
+    def get(self, request):
+        request.session.flush()
+        return HttpResponse('<script>alert("Sesion cerrada");window.location.href="/api/admin/login/";</script>')
+    #####################################################################################################################
+    
 #api/admin/
 class AdminListView(APIView):
     def get(self, request):
@@ -617,5 +663,9 @@ class UserLoginView(APIView):
 
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-
-
+class UserLogout(APIView):
+    #Logout para usuarios
+    def get(self, request, format=None):
+        # simplemente elimina la sesión actual del usuario
+        request.user.auth_token.delete()
+        return Response(status=status.HTTP_200_OK)

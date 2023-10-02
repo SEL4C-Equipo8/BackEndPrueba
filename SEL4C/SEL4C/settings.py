@@ -46,7 +46,14 @@ INSTALLED_APPS = [
     'rest_framework',
     'ckeditor',
     'SEL4c_app.apps.AuthConfig',
+    'clearcache',
 ]
+
+SESSION_COOKIE_NAME = 'SEL4C_sessionid'
+#SESSION_COOKIE_SECURE = True
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_SAVE_EVERY_REQUEST = True
 
 CKEDITOR_CONFIGS = {
     'webEditor': {
@@ -98,9 +105,9 @@ WSGI_APPLICATION = 'SEL4C.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "mydatabase",
+    'default': {
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': BASE_DIR / 'mydatabase',
     }
 }
 
