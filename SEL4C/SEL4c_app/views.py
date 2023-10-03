@@ -1,6 +1,6 @@
 
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate, login
+#from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 from django.views import View
 from rest_framework.views import APIView
@@ -220,7 +220,6 @@ class ModuleDetailView(APIView):
 def ModuleCreateView(request, id_actividad):
     form = ModulesForm()
     if request.method == 'POST':
-        #print(request.body)
         form = ModulesForm(request.POST)
         if form.is_valid():
             titulo_mod = form.cleaned_data['titulo_mod']

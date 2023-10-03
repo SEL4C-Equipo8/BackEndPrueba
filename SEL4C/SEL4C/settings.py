@@ -105,9 +105,13 @@ WSGI_APPLICATION = 'SEL4C.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-    'ENGINE': 'django.db.backends.sqlite3',
-    'NAME': BASE_DIR / 'mydatabase',
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "sel4c",
+        "USER": "superEquipo8",
+        "PASSWORD":"@SEL4Cdb",
+        "HOST":"3.81.160.222",
+        "PORT":""
     }
 }
 
