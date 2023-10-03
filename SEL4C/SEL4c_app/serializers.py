@@ -2,6 +2,9 @@ from rest_framework import serializers
 from .models import Usuario, Actividades, Modulos, EvidenciaModulos, Evaluaciones, ResultadoEvaluaciones, Estadisticas, ProgresoActividades, ProgresoUsuarios, Administrador
 
 
+#from django.contrib.auth.models import Usuario
+
+
 # ===== USUARIO =====
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -63,3 +66,11 @@ class AdministradorSerializer(serializers.ModelSerializer):
         model = Administrador
         fields = '__all__'
 
+
+
+
+class TokenSerializer(serializers.Serializer):
+    """
+    This serializer serializes the token data
+    """
+    token = serializers.CharField(max_length=255)

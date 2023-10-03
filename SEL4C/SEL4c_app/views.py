@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404
 from .serializers import UsuarioSerializer, ActividadesSerializer, ModulosSerializer, EvidenciaModulosSerializer, EvaluacionesSerializer, ResultadoEvaluacionesSerializer, EstadisticasSerializer, ProgresoActividadesSerializer, ProgresoUsuariosSerializer, AdministradorSerializer
 from django.contrib.auth.hashers import check_password
 from .forms import ModulesForm
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
 
@@ -34,32 +34,27 @@ class UserProfileView(APIView):
 
 
 #api/user/login/
-class UserLoginView(APIView):
-    def post(self, request):
-        # Obtener el correo electrónico y la contraseña de la solicitud POST
-        email = request.data.get('email')
-        password = request.data.get('contrasena')
-        try:
-            # Buscar al usuario por correo electrónico en la tabla personalizada
-            user = Usuario.objects.get(email=email)
-            # Verificar la contraseña
-            if user.contrasena == password:
-                    #return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
-                    # Las credenciales son válidas, generamos tokens JWT
-                    # refresh = RefreshToken.for_user(user)
-                    # print("despues")
-                    # return Response({
-                    #     'refresh': str(refresh),
-                    #     'access': str(refresh.access_token),
-                    #     }, status=status.HTTP_200_OK)
-                # Succesful
-                return Response({"message":"Credenciales validas"}, status=status.HTTP_200_OK)
-            else:
-                # La contraseña es incorrecta
-                return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
-        except Usuario.DoesNotExist:
-            # El usuario no existe en la base de datos
-            return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
+# class UserLoginView(APIView):
+#     def post(self, request):
+#         # Obtener el correo electrónico y la contraseña de la solicitud POST
+#         email = request.data.get('email')
+#         password = request.data.get('contrasena')
+
+#         try:
+#             # Buscar al usuario por correo electrónico en la tabla personalizada
+#             user = Usuario.objects.get(email=email)
+
+#             # Verificar la contraseña
+#             if user.contrasena == password:
+
+
+#                 return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
+#             else:
+#                 # La contraseña es incorrecta
+#                 return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
+#         except Usuario.DoesNotExist:
+#             # El usuario no existe en la base de datos
+#             return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 #api/user/signup/
@@ -248,21 +243,18 @@ class AdminLoginView(APIView):
         # Obtener el correo electrónico y la contraseña de la solicitud POST
         correo = request.data.get('correo')
         contrasena = request.data.get('contrasena')
-
         try:
             # Buscar al administrador por correo electrónico en la tabla Administrador
             admin = Administrador.objects.get(correo=correo)
-
+            print (admin)
             # Verificar la contraseña
             if admin.contrasena == contrasena:
-                    # # Las credenciales son válidas, generamos tokens JWT
-                    # refresh = RefreshToken.for_admin(admin)
-                    # #return Response({"message": "Inicio de sesión exitosa"}, status=status.HTTP_200_OK)
-                    # return Response({
-                    # 'refresh': str(refresh),
-                    # 'access': str(refresh.access_token),
-                    # }, status=status.HTTP_200_OK)
-                return Response({"message":"Credenciales validas"}, status=status.HTTP_200_OK)
+                # Definicion de cookies
+                request.session.flush()
+                response = redirect('whoami')
+                response.set_cookie("id_admin", str(admin.pk))
+                #return Response({"message": "Inicio de sesión exitosa", "Cookie":cookie_value}, status=status.HTTP_200_OK)
+                return response
             else:
                 # La contraseña es incorrecta
                 return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -270,6 +262,48 @@ class AdminLoginView(APIView):
             # El administrador no existe en la base de datos
             return Response({"message": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
 
+#### AUXILIARES PARA LOGIN ADMIN Y COOKIES
+class AdminSignupView(APIView):
+    def post(self, request, *args, **kwargs):
+        # Obtenemos los datos del usuario desde la solicitud POST
+        data = request.data
+
+        # Serializamos los datos para validar y crear el usuario
+        serializer = AdministradorSerializer(data=data)
+
+        if serializer.is_valid():
+            # Creamos el usuario
+            administrador = serializer.save()
+
+            # Devolvemos una respuesta exitosa
+            response_data = {
+                "message": "Administrador registrado con éxito"
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        else:
+            # Si los datos no son válidos, devolvemos los errores
+            errors = serializer.errors
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        
+def whoami(request):
+    context = {}
+    print(request.COOKIES)
+    if 'id_admin' in request.COOKIES:
+        admin = request.COOKIES['id_admin']
+        user = Administrador.objects.get(id_admin=admin)
+        #context['message'] = 'Eres el usuario admin ' + str(admin)
+        context['id_admin'] = admin
+
+        return HttpResponse('<script>alert("Eres el admin '+str(admin)+'");window.location.href="/api/admin/";</script>')
+    else:
+        return HttpResponse('<script>alert("No hay usuario admin");window.location.href="/api/admin/login/";</script>')
+    
+class AdminLogoutView(APIView):
+    def get(self, request):
+        request.session.flush()
+        return HttpResponse('<script>alert("Sesion cerrada");window.location.href="/api/admin/login/";</script>')
+    #####################################################################################################################
+    
 #api/admin/
 class AdminListView(APIView):
     def get(self, request):
@@ -585,3 +619,52 @@ class UserProgressView(APIView):
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({"error": f"El progreso del usuario con ID {id_usuario} no existe"}, status=status.HTTP_404_NOT_FOUND)
+    
+
+
+from django.contrib.auth import authenticate, login
+#from django.contrib.auth.models import Usuario
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from rest_framework_jwt.settings import api_settings
+
+from .serializers import TokenSerializer
+
+# Get the JWT settings
+jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+
+class UserLoginView(APIView):
+    """
+    POST authentication/login/
+    """
+
+    # Esta clase de permiso anulará la configuración global de permisos
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email", "")
+        contrasena = request.data.get("contrasena", "")
+        
+        # Aquí debes realizar tu propia lógica de autenticación
+        try:
+            user = Usuario.objects.get(email=email)
+            if user.contrasena == contrasena:
+                # Aquí puedes generar un token como lo estabas haciendo
+                serializer = TokenSerializer(data={
+                    "token": jwt_encode_handler(
+                        jwt_payload_handler(user)
+                    )})
+                serializer.is_valid()
+                return Response({"message": "Credenciales válidas", "token": serializer.data})
+        except Usuario.DoesNotExist:
+            pass
+
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+class UserLogout(APIView):
+    #Logout para usuarios
+    def get(self, request, format=None):
+        # simplemente elimina la sesión actual del usuario
+        request.user.auth_token.delete()
+        return Response(status=status.HTTP_200_OK)
