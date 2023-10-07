@@ -4,7 +4,7 @@ from . import views
 from .views import UserProfileView, UserLoginView, UserSignupView, UploadEvaluationResultsView, UploadModuleEvidenceView, ActivityDetailView, ModuleDetailView, AdminDetailView, AdminListView, CreateEvaluationView
 from .views import AdminLoginView, AdminDashboardView, AdminPersonalProgressView, AdminUsersListView, AdminGenderSegmentationView, AdminAgeSegmentationView, AdminNationalitySegmentationView, AdminEducationSegmentationView
 from .views import UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView, ActivityCreateView, ModuleCreateView, ActivityListView, ModuleListView, UserProgressView
-from .views import EstadisticasCreateView, UserProgressActivtiesView, AdminSignupView, AdminLogoutView
+from .views import EstadisticasCreateView, UserProgressActivtiesView, AdminSignupView, AdminLogoutView, PreguntasListView, PreguntasDetailView, RespuestasDetailView
 
 urlpatterns = [
     #####   USER   #####
@@ -54,6 +54,13 @@ urlpatterns = [
     path('api/user/progress/user/<int:id_usuario>/', UserProgressView.as_view(), name='user-progress'),
 
     #Who am I?
-    path('api/whoami/', views.whoami, name='whoami')
+    path('api/whoami/', views.whoami, name='whoami'),
+
+    #Preguntas
+    path('api/preguntas/all/', PreguntasListView.as_view(), name='preguntas-list'),
+    path('api/preguntas/<int:id_pregunta>/', PreguntasDetailView.as_view(), name='preguntas-detail'),
+
+    #Respuestas
+    path('api/respuestas/<int:id_usuario>/<int:id_evaluacion>/', RespuestasDetailView.as_view(), name='respuestas-detail'),
     
 ]

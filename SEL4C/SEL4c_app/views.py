@@ -8,9 +8,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Case, When, IntegerField, Count, Value
 from django.db.models.functions import Cast
-from .models import Usuario, Actividades, Modulos, EvidenciaModulos, Evaluaciones, ResultadoEvaluaciones, Estadisticas, ProgresoActividades, ProgresoUsuarios, Administrador
+from .models import Usuario, Actividades, Modulos, EvidenciaModulos, Evaluaciones, ResultadoEvaluaciones, Estadisticas, ProgresoActividades, ProgresoUsuarios, Administrador, Preguntas, Respuestas
 from django.shortcuts import get_object_or_404
-from .serializers import UsuarioSerializer, ActividadesSerializer, ModulosSerializer, EvidenciaModulosSerializer, EvaluacionesSerializer, ResultadoEvaluacionesSerializer, EstadisticasSerializer, ProgresoActividadesSerializer, ProgresoUsuariosSerializer, AdministradorSerializer
+from .serializers import UsuarioSerializer, ActividadesSerializer, ModulosSerializer, EvidenciaModulosSerializer, EvaluacionesSerializer, ResultadoEvaluacionesSerializer, EstadisticasSerializer, ProgresoActividadesSerializer, ProgresoUsuariosSerializer, AdministradorSerializer, PreguntasSerializer, RespuestasSerializer
 from django.contrib.auth.hashers import check_password
 from .forms import ModulesForm
 from django.shortcuts import render, redirect
@@ -650,13 +650,14 @@ class UserLoginView(APIView):
         try:
             user = Usuario.objects.get(email=email)
             if user.contrasena == contrasena:
+                id_usuario = user.id_usuario
                 # Aquí puedes generar un token como lo estabas haciendo
                 serializer = TokenSerializer(data={
                     "token": jwt_encode_handler(
                         jwt_payload_handler(user)
                     )})
                 serializer.is_valid()
-                return Response({"message": "Credenciales válidas", "token": serializer.data})
+                return Response({"message": "Credenciales válidas", "token": serializer.data, "id": id_usuario} )
         except Usuario.DoesNotExist:
             pass
 
@@ -668,3 +669,97 @@ class UserLogout(APIView):
         # simplemente elimina la sesión actual del usuario
         request.user.auth_token.delete()
         return Response(status=status.HTTP_200_OK)
+    
+#api/preguntas/all/
+class PreguntasListView(APIView):
+    def get(self, request):
+        preguntas = Preguntas.objects.all()
+        serializer = PreguntasSerializer(preguntas, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        preguntas_data = request.data  # Obtenemos los datos JSON enviados en la solicitud
+        preguntas_con_id = []  # Aquí almacenaremos las preguntas con ID asignado
+
+        for pregunta_data in preguntas_data:
+            # Creamos una nueva pregunta en la base de datos y asignamos un ID automáticamente
+            nueva_pregunta = Preguntas.objects.create(contenido=pregunta_data['contenido'])
+            
+            # Serializamos la pregunta recién creada
+            serializer = PreguntasSerializer(nueva_pregunta)
+            preguntas_con_id.append(serializer.data)
+
+        return Response(preguntas_con_id, status=status.HTTP_201_CREATED)
+
+
+#api/preguntas/<int:id_pregunta>/
+class PreguntasDetailView(APIView):
+    def get(self, request, id_pregunta):
+        pregunta = get_object_or_404(Preguntas, id_pregunta=id_pregunta)
+        serializer =PreguntasSerializer(pregunta)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        serializer = PreguntasSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Pregunta publicada con éxito"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request, id_pregunta):
+        pregunta = get_object_or_404(Preguntas, id_pregunta=id_pregunta)
+        serializer = PreguntasSerializer(pregunta, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Pregunta actualizada con éxito"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, id_pregunta):
+        pregunta = get_object_or_404(Preguntas, id_pregunta=id_pregunta)
+        pregunta.delete()
+        return Response({"message": "Actividad eliminada con éxito"})
+    
+#api/respuestas/<int:id_usuario>/<int:id_evaluacion>/
+class RespuestasDetailView(APIView):
+    def get(self, request, id_usuario, id_evaluacion):
+        respuestas = Respuestas.objects.filter(id_usuario=id_usuario, id_evaluacion=id_evaluacion)
+        serializer = RespuestasSerializer(respuestas, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, id_usuario, id_evaluacion):
+        try:
+            respuestas_data = request.data  # Obtenemos los datos JSON enviados en la solicitud
+            respuestas_creadas = []  # Aquí almacenaremos las respuestas creadas con ID asignado
+
+            for respuesta_data in respuestas_data:
+                #id_pregunta = respuesta_data.get('id')  # Obtenemos el ID de la pregunta del JSON
+                id_evaluacion = respuesta_data.get('id_evaluacion')  # Obtenemos el ID de la evaluación
+                respuesta_valor = respuesta_data.get('respuesta')  # Obtenemos el valor de la respuesta del JSON
+                
+                # Asegúrate de que los datos sean enteros
+                #id_pregunta = int(id_pregunta)
+                id_evaluacion = int(id_evaluacion)
+                respuesta_valor = int(respuesta_valor)
+
+                respuesta = Respuestas(id_evaluacion_id=id_evaluacion, id_usuario=id_usuario, respuesta=respuesta_valor)
+                respuesta.save()
+                respuestas_creadas.append({ "id_respuesta": respuesta.id})
+
+            return Response({"message": "Respuestas creadas exitosamente.", "respuestas_creadas": respuestas_creadas}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, id_usuario, id_evaluacion, id_respuesta):
+        respuesta = get_object_or_404(Respuestas, id_usuario=id_usuario, id_evaluacion=id_evaluacion, id_respuesta=id_respuesta)
+        serializer = RespuestasSerializer(respuesta, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Respuesta actualizada con éxito."})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id_usuario, id_evaluacion, id_respuesta):
+        respuesta = get_object_or_404(Respuestas, id_usuario=id_usuario, id_evaluacion=id_evaluacion, id_respuesta=id_respuesta)
+        respuesta.delete()
+        return Response({"message": "Respuesta eliminada con éxito."})
+    
+
