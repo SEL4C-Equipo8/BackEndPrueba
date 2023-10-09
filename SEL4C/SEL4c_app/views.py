@@ -99,6 +99,10 @@ class CreateEvaluationView(APIView):
             return Response({"message": "Evaluación creada correctamente."}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"message": f"Error al crear la evaluación: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request):
+        evaluaciones = Evaluaciones.objects.all()
+        serializer = EvaluacionesSerializer(evaluaciones, many=True)
+        return Response(serializer.data)
 
 
 #api/user/evaluations/
@@ -719,7 +723,7 @@ class PreguntasDetailView(APIView):
         pregunta.delete()
         return Response({"message": "Actividad eliminada con éxito"})
     
-#api/respuestas/<int:id_usuario>/<int:id_evaluacion>/
+#api/respuestas/<int:id_usuario>/<int:id_evaluacion>/ 
 class RespuestasDetailView(APIView):
     def get(self, request, id_usuario, id_evaluacion):
         respuestas = Respuestas.objects.filter(id_usuario=id_usuario, id_evaluacion=id_evaluacion)
@@ -729,25 +733,27 @@ class RespuestasDetailView(APIView):
     def post(self, request, id_usuario, id_evaluacion):
         try:
             respuestas_data = request.data  # Obtenemos los datos JSON enviados en la solicitud
-            respuestas_creadas = []  # Aquí almacenaremos las respuestas creadas con ID asignado
-
+            respuestas_creadas = []
+            #Obtener el id_usuario de la tabla Usuario
+            user = Usuario.objects.get(id_usuario=id_usuario)
+            idUsuario = user.id_usuario
+            #Obtener el id_evaluacion de la tabla Evaluaciones
+            evaluacion = Evaluaciones.objects.get(id_evaluacion=id_evaluacion)
+            id_evaluacion = evaluacion.id_evaluacion
+            print (idUsuario, id_evaluacion)
             for respuesta_data in respuestas_data:
-                #id_pregunta = respuesta_data.get('id')  # Obtenemos el ID de la pregunta del JSON
-                id_evaluacion = respuesta_data.get('id_evaluacion')  # Obtenemos el ID de la evaluación
-                respuesta_valor = respuesta_data.get('respuesta')  # Obtenemos el valor de la respuesta del JSON
-                
-                # Asegúrate de que los datos sean enteros
-                #id_pregunta = int(id_pregunta)
-                id_evaluacion = int(id_evaluacion)
-                respuesta_valor = int(respuesta_valor)
-
-                respuesta = Respuestas(id_evaluacion_id=id_evaluacion, id_usuario=id_usuario, respuesta=respuesta_valor)
+                id_pregunta_json = respuesta_data.get('id')
+                respuesta_valor = respuesta_data.get('respuesta')
+                pregunta = Preguntas.objects.get(id_pregunta=id_pregunta_json)
+                # Crear una nueva respuesta en la base de datos y asignar un ID automáticamente
+                respuesta = Respuestas(id_evaluacion=evaluacion, id_usuario=user, id_pregunta=pregunta, respuesta=respuesta_valor)
                 respuesta.save()
-                respuestas_creadas.append({ "id_respuesta": respuesta.id})
+                respuestas_creadas.append({"id_respuesta": respuesta.id})
 
             return Response({"message": "Respuestas creadas exitosamente.", "respuestas_creadas": respuestas_creadas}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
 
     def put(self, request, id_usuario, id_evaluacion, id_respuesta):
         respuesta = get_object_or_404(Respuestas, id_usuario=id_usuario, id_evaluacion=id_evaluacion, id_respuesta=id_respuesta)

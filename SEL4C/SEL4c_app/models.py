@@ -87,10 +87,9 @@ class EvidenciaModulos(models.Model):
     def __str__(self):
         return f"Evidencia de {self.modulo.titulo_mod}"
 
-
 # ==== TABLA EVALUACIONES ====
 class Evaluaciones(models.Model):
-    id_evaluacion = models.AutoField(primary_key=True)
+    id_evaluacion = models.AutoField(primary_key=True, db_column='id_evaluacion')
     tipo_evaluacion = models.CharField(max_length=100)
     imagen_env = models.FileField(upload_to='evaluacion_imagenes/', null=True, blank=True)
 
