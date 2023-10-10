@@ -21,9 +21,13 @@ class Usuario(AbstractUser):
 """
 
 # Opciones para el campo 'pais'
-PAISES = (
-    ('opcion1', 'Opción 1'),
-    ('opcion2', 'Opción 2'),
+DISCIPLINAS = (
+    ('opcion1', 'Negocios'),
+    ('opcion2', 'Arquitectura, arte y diseño'),
+    ('opcion3', 'Ciencias de la salud'),
+    ('opcion4', 'Ciencias sociales'),
+    ('opcion5', 'Humanidades y educación'),
+    ('opcion6', 'Ingeniería y Ciencias'),
 )
 
 # ==== TABLA USUARIOS ====
@@ -37,8 +41,8 @@ class Usuario(models.Model):
     institucion = models.CharField(max_length=200)
     genero = models.CharField(max_length=20)
     edad = models.IntegerField()
-    pais = models.CharField(max_length=100, choices=PAISES)
-
+    pais = models.CharField(max_length=100)
+    disciplina = models.CharField(max_length=100, choices=DISCIPLINAS)
 
 
 
