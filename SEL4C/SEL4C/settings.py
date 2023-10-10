@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'ckeditor',
     'SEL4c_app.apps.AuthConfig',
     'clearcache',
+    'drf_yasg',
 ]
 
 SESSION_COOKIE_NAME = 'SEL4C_sessionid'
@@ -200,4 +201,8 @@ JWT_AUTH = {
 
     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
     'JWT_AUTH_COOKIE': None,
+}
+
+SWAGGER_SETTINGS = {
+    'DEFAULT_INFO': 'tu_app.views.schema_view',
 }

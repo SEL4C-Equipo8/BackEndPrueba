@@ -769,3 +769,11 @@ class RespuestasDetailView(APIView):
         return Response({"message": "Respuesta eliminada con éxito."})
     
 
+from rest_framework import permissions
+from rest_framework.schemas import get_schema_view
+
+schema_view = get_schema_view(
+    title="API de SEL4C",
+    public=True,
+    permission_classes=[permissions.AllowAny],  # Puedes cambiar esto según tus necesidades de autenticación
+)

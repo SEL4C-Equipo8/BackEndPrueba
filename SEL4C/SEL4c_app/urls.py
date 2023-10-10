@@ -6,6 +6,20 @@ from .views import AdminLoginView, AdminDashboardView, AdminPersonalProgressView
 from .views import UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView, ActivityCreateView, ModuleCreateView, ActivityListView, ModuleListView, UserProgressView
 from .views import EstadisticasCreateView, UserProgressActivtiesView, AdminSignupView, AdminLogoutView, PreguntasListView, PreguntasDetailView, RespuestasDetailView
 
+from django.contrib import admin
+from django.urls import path, re_path, include
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="API de SEL4C",
+        default_version='v1',
+        description="Documentación de API de SEL4C",
+    ),
+    public=True,
+)
+
 urlpatterns = [
     #####   USER   #####
     # User (login, signup, profile) OK
@@ -63,4 +77,6 @@ urlpatterns = [
     #Respuestas
     path('api/respuestas/<int:id_usuario>/<int:id_evaluacion>/', RespuestasDetailView.as_view(), name='respuestas-detail'),
     
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
