@@ -592,12 +592,24 @@ class EstadisticasCreateView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 #api/user/progress/user/<int:id_usuario>/
+#api/user/progress/user/<int:id_usuario>/
 class UserProgressView(APIView):
     def get_object(self, id_usuario):
         try:
             return ProgresoUsuarios.objects.get(id_usuario=id_usuario)
         except ProgresoUsuarios.DoesNotExist:
             return None
+        
+    def get(self, request, id_usuario):
+        # Recuperar todos los registros de ProgresoUsuarios con el id_usuario proporcionado
+        progresos_usuario = ProgresoUsuarios.objects.filter(id_usuario=id_usuario)
+        
+        # Verificar si se encontraron registros
+        if progresos_usuario.exists():
+            serializer = ProgresoUsuariosSerializer(progresos_usuario, many=True)
+            return Response(serializer.data)
+        else:
+            return Response({"error": f"No se encontraron registros de progreso para el usuario con ID {id_usuario}"}, status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, id_usuario):
         try:
@@ -615,14 +627,27 @@ class UserProgressView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, id_usuario):
-        progreso_usuario = self.get_object(id_usuario)
-        if progreso_usuario is not None:
-            serializer = ProgresoUsuariosSerializer(progreso_usuario, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"error": f"El progreso del usuario con ID {id_usuario} no existe"}, status=status.HTTP_404_NOT_FOUND)
+        id_actividad = request.data.get("id_actividad")
+        id_modulo = request.data.get("id_modulo")
+        estado_actividad = request.data.get("estado_actividad")
+        estado_modulo = request.data.get("estado_modulo")
+
+        try:
+            progreso_usuario = ProgresoUsuarios.objects.get(
+                id_usuario=id_usuario,
+                id_actividad=id_actividad,
+                id_modulo=id_modulo
+            )
+
+            # Actualiza los campos específicos
+            progreso_usuario.estado_actividad = estado_actividad
+            progreso_usuario.estado_modulo = estado_modulo
+            progreso_usuario.save()
+
+            serializer = ProgresoUsuariosSerializer(progreso_usuario)
+            return Response(serializer.data)
+        except ProgresoUsuarios.DoesNotExist:
+            return Response({"error": f"No se encontró un registro de progreso con los criterios proporcionados"}, status=status.HTTP_404_NOT_FOUND)
     
 
 
