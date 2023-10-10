@@ -72,7 +72,7 @@ class UserSignupView(APIView):
 
             # Devolvemos una respuesta exitosa
             response_data = {
-                "message": "Usuario registrado con éxito"
+                "message": "Usuario registrado con éxito", "id": usuario.id_usuario
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
         else:
