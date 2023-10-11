@@ -3,8 +3,22 @@ from . import views
 
 from .views import UserProfileView, UserLoginView, UserSignupView, UploadEvaluationResultsView, UploadModuleEvidenceView, ActivityDetailView, ModuleDetailView, AdminDetailView, AdminListView, CreateEvaluationView
 from .views import AdminLoginView, AdminDashboardView, AdminPersonalProgressView, AdminUsersListView, AdminGenderSegmentationView, AdminAgeSegmentationView, AdminNationalitySegmentationView, AdminEducationSegmentationView
-from .views import UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView, ActivityCreateView, ModuleCreateView, ActivityListView, ModuleListView, UserProgressView
-from .views import EstadisticasCreateView, UserProgressActivtiesView, AdminSignupView, AdminLogoutView
+from .views import UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView, ActivityCreateView, ModuleCreateView, ModuleUpdateView, ActivityListView, ModuleListView, UserProgressView
+from .views import EstadisticasCreateView, UserProgressActivtiesView, AdminSignupView, AdminLogoutView, PreguntasListView, PreguntasDetailView, RespuestasDetailView
+
+from django.contrib import admin
+from django.urls import path, re_path, include
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="API de SEL4C",
+        default_version='v1',
+        description="Documentación de API de SEL4C",
+    ),
+    public=True,
+)
 
 urlpatterns = [
     #####   USER   #####
@@ -24,7 +38,9 @@ urlpatterns = [
     # Modules OK
     path('api/admin/activity/<int:id_actividad>/module/all/', ModuleListView.as_view(), name='module-detail'),
     path('api/admin/activity/<int:id_actividad>/module/<int:id_modulo>/', ModuleDetailView.as_view(), name='module-detail'),
-    path('api/admin/activity/<int:id_actividad>/module/create/', views.ModuleCreateView, name='module-detail'),
+    path('api/admin/activity/<int:id_actividad>/module/<int:id_modulo>/update/', ModuleUpdateView.as_view(), name='module-update'),
+    #path('api/admin/activity/<int:id_actividad>/module/create/', views.ModuleCreateView, name='module-detail'),
+    path('api/admin/activity/<int:id_actividad>/module/create/', ModuleCreateView.as_view(), name='module-detail'),
             #OLD VIEW
             # path('api/admin/activity/<int:id_actividad>/module/', ModuleCreateView.as_view(), name='module-detail'),
     # Evidences OK
@@ -54,6 +70,15 @@ urlpatterns = [
     path('api/user/progress/user/<int:id_usuario>/', UserProgressView.as_view(), name='user-progress'),
 
     #Who am I?
-    path('api/whoami/', views.whoami, name='whoami')
+    path('api/whoami/', views.whoami, name='whoami'),
+
+    #Preguntas
+    path('api/preguntas/all/', PreguntasListView.as_view(), name='preguntas-list'),
+    path('api/preguntas/<int:id_pregunta>/', PreguntasDetailView.as_view(), name='preguntas-detail'),
+
+    #Respuestas
+    path('api/respuestas/<int:id_usuario>/<int:id_evaluacion>/', RespuestasDetailView.as_view(), name='respuestas-detail'),
     
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]

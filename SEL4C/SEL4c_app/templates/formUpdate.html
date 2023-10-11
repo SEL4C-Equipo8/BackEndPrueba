@@ -1,0 +1,8 @@
+{% load static %}
+{{ form.media }}
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="_method" value="PUT">
+    {{ form.as_p }}
+    <button type="submit">Actualizar</button>
+</form>

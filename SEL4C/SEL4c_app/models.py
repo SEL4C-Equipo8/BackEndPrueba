@@ -21,9 +21,13 @@ class Usuario(AbstractUser):
 """
 
 # Opciones para el campo 'pais'
-PAISES = (
-    ('opcion1', 'Opción 1'),
-    ('opcion2', 'Opción 2'),
+DISCIPLINAS = (
+    ('opcion1', 'Negocios'),
+    ('opcion2', 'Arquitectura, arte y diseño'),
+    ('opcion3', 'Ciencias de la salud'),
+    ('opcion4', 'Ciencias sociales'),
+    ('opcion5', 'Humanidades y educación'),
+    ('opcion6', 'Ingeniería y Ciencias'),
 )
 
 # ==== TABLA USUARIOS ====
@@ -37,8 +41,8 @@ class Usuario(models.Model):
     institucion = models.CharField(max_length=200)
     genero = models.CharField(max_length=20)
     edad = models.IntegerField()
-    pais = models.CharField(max_length=100, choices=PAISES)
-
+    pais = models.CharField(max_length=100)
+    disciplina = models.CharField(max_length=100, choices=DISCIPLINAS)
 
 
 
@@ -87,15 +91,15 @@ class EvidenciaModulos(models.Model):
     def __str__(self):
         return f"Evidencia de {self.modulo.titulo_mod}"
 
-
 # ==== TABLA EVALUACIONES ====
 class Evaluaciones(models.Model):
-    id_evaluacion = models.AutoField(primary_key=True)
+    id_evaluacion = models.AutoField(primary_key=True, db_column='id_evaluacion')
     tipo_evaluacion = models.CharField(max_length=100)
     imagen_env = models.FileField(upload_to='evaluacion_imagenes/', null=True, blank=True)
 
     def __str__(self):
         return f"Evaluación tipo {self.tipo_evaluacion}"
+
 
 
 # ==== TABLA RESULTADO EVALUACIONES ====
@@ -160,3 +164,25 @@ class Administrador(models.Model):
 
     def __str__(self):
         return self.username
+    
+
+# ==== TABLA PREGUNTAS ====
+class Preguntas(models.Model):
+    id_pregunta = models.AutoField(primary_key=True)
+    contenido = models.CharField(max_length=1000)
+    
+    def __str__(self):
+        return self.contenido
+    
+
+# ====TABLA RESUPUESTAS ====
+class Respuestas(models.Model):
+    id_respuesta = models.AutoField(primary_key=True)
+    id_evaluacion = models.ForeignKey(Evaluaciones, on_delete=models.CASCADE, db_column='id_evaluacion')
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
+    id_pregunta = models.ForeignKey(Preguntas, on_delete=models.CASCADE, db_column='id_pregunta')
+    respuesta = models.IntegerField()
+
+
+    def str(self):
+        return self.respuesta

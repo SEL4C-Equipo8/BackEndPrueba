@@ -14,6 +14,7 @@ from pathlib import Path
 
 
 import datetime
+import os
 
 
 
@@ -32,6 +33,7 @@ SECRET_KEY = 'django-insecure-l5s806r)k6+-y+4-@!a4i-*^3^n$n3&8is-j%+px6i=%v%3grm
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+CORS_ORIGIN_ALLOW_ALL = True
 
 
 # Application definition
@@ -47,6 +49,8 @@ INSTALLED_APPS = [
     'ckeditor',
     'SEL4c_app.apps.AuthConfig',
     'clearcache',
+    'drf_yasg',
+    'corsheaders',
 ]
 
 SESSION_COOKIE_NAME = 'SEL4C_sessionid'
@@ -78,6 +82,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'SEL4C.urls'
@@ -110,7 +116,8 @@ DATABASES = {
         "NAME": "sel4c",
         "USER": "superEquipo8",
         "PASSWORD":"@SEL4Cdb",
-        "HOST":"3.81.160.222",
+        "HOST":"54.205.255.125",
+        "HOST":"54.205.255.125",
         "PORT":""
     }
 }
@@ -161,8 +168,11 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+]
 
 
 
@@ -200,4 +210,8 @@ JWT_AUTH = {
 
     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
     'JWT_AUTH_COOKIE': None,
+}
+
+SWAGGER_SETTINGS = {
+    'DEFAULT_INFO': 'tu_app.views.schema_view',
 }

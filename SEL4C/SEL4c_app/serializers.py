@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Usuario, Actividades, Modulos, EvidenciaModulos, Evaluaciones, ResultadoEvaluaciones, Estadisticas, ProgresoActividades, ProgresoUsuarios, Administrador
+from .models import Usuario, Actividades, Modulos, EvidenciaModulos, Evaluaciones, ResultadoEvaluaciones, Estadisticas, ProgresoActividades, ProgresoUsuarios, Administrador, Preguntas, Respuestas
 
 
 #from django.contrib.auth.models import Usuario
@@ -66,7 +66,17 @@ class AdministradorSerializer(serializers.ModelSerializer):
         model = Administrador
         fields = '__all__'
 
-
+# ===== PREGUNTAS =====
+class PreguntasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Preguntas
+        fields = '__all__'
+    
+# ===== RESPUESTAS =====
+class RespuestasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Respuestas
+        fields = '__all__'
 
 
 class TokenSerializer(serializers.Serializer):

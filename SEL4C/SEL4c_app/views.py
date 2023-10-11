@@ -8,9 +8,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Case, When, IntegerField, Count, Value
 from django.db.models.functions import Cast
-from .models import Usuario, Actividades, Modulos, EvidenciaModulos, Evaluaciones, ResultadoEvaluaciones, Estadisticas, ProgresoActividades, ProgresoUsuarios, Administrador
+from .models import Usuario, Actividades, Modulos, EvidenciaModulos, Evaluaciones, ResultadoEvaluaciones, Estadisticas, ProgresoActividades, ProgresoUsuarios, Administrador, Preguntas, Respuestas
 from django.shortcuts import get_object_or_404
-from .serializers import UsuarioSerializer, ActividadesSerializer, ModulosSerializer, EvidenciaModulosSerializer, EvaluacionesSerializer, ResultadoEvaluacionesSerializer, EstadisticasSerializer, ProgresoActividadesSerializer, ProgresoUsuariosSerializer, AdministradorSerializer
+from .serializers import UsuarioSerializer, ActividadesSerializer, ModulosSerializer, EvidenciaModulosSerializer, EvaluacionesSerializer, ResultadoEvaluacionesSerializer, EstadisticasSerializer, ProgresoActividadesSerializer, ProgresoUsuariosSerializer, AdministradorSerializer, PreguntasSerializer, RespuestasSerializer
 from django.contrib.auth.hashers import check_password
 from .forms import ModulesForm
 from django.shortcuts import render, redirect
@@ -72,7 +72,7 @@ class UserSignupView(APIView):
 
             # Devolvemos una respuesta exitosa
             response_data = {
-                "message": "Usuario registrado con éxito"
+                "message": "Usuario registrado con éxito", "id": usuario.id_usuario
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
         else:
@@ -99,6 +99,10 @@ class CreateEvaluationView(APIView):
             return Response({"message": "Evaluación creada correctamente."}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"message": f"Error al crear la evaluación: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request):
+        evaluaciones = Evaluaciones.objects.all()
+        serializer = EvaluacionesSerializer(evaluaciones, many=True)
+        return Response(serializer.data)
 
 
 #api/user/evaluations/
@@ -200,23 +204,60 @@ class ModuleDetailView(APIView):
     def get(self, request, id_actividad, id_modulo):
         modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
         serializer = ModulosSerializer(modulo)
+        if request.accepted_renderer.format == 'html':
+            # Si la solicitud acepta formato HTML, renderiza el formulario
+            form = ModulesForm(instance=modulo)
+            return render(request, 'form.html', {'form': form, 'serializer': serializer.data})
+        # Si no, responde con JSON
         return Response(serializer.data)
-
+    
     def put(self, request, id_actividad, id_modulo):
         modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
         serializer = ModulosSerializer(modulo, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Módulo actualizado con éxito"})
+            return Response({"message": "Modulo actualizado con éxito"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id_actividad, id_modulo):
         modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
         modulo.delete()
         return Response({"message": "Módulo eliminado con éxito"})
-    
+
+'''
+def ModuleUpdateView(request, id_actividad, id_modulo):
+    # Obtén la instancia del módulo que deseas actualizar
+    modulo = get_object_or_404(Modulos, id_modulo=id_modulo)
+
+    if request.method == 'POST':
+        # Si el formulario se ha enviado con datos, procesa el formulario
+        form = ModulesForm(request.POST, instance=modulo)
+
+        if form.is_valid():
+            # Guarda los cambios en el módulo
+            form.save()
+        return HttpResponse('<script>alert("Modulo Actualizado");window.location.href="/api/admin/activity/'+str(id_actividad)+'/module/'+str(id_modulo)+'/update/";</script>')
+
+    else:
+        # Si no se ha enviado el formulario, crea una instancia del formulario con los datos actuales del módulo
+        form = ModulesForm(instance=modulo)
+
+    return render(request, 'formUpdate.html', {'form': form})
+'''
+
+class ModuleUpdateView(APIView):
+    def put(self, request, id_actividad, id_modulo):
+        modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
+        serializer = ModulosSerializer(modulo, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Modulo actualizado con éxito"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 #api/admin/activity/<int:id_actividad>/module/  
 #@csrf_exempt
+'''
 def ModuleCreateView(request, id_actividad):
     form = ModulesForm()
     if request.method == 'POST':
@@ -236,6 +277,26 @@ def ModuleCreateView(request, id_actividad):
     #else:
         #form = ModulesForm()
     return render(request, 'form.html', {'form': form})
+    '''
+
+class ModuleCreateView(APIView):
+    def post(self, request, id_actividad):
+        # Intenta obtener la Actividad con el id_actividad proporcionado
+        try:
+            actividad = Actividades.objects.get(pk=id_actividad)
+        except Actividades.DoesNotExist:
+            return Response({'error': 'Actividad no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Modifica el request.data para agregar el id_actividad (asegúrate de hacer una copia para no modificar el request original)
+        data = request.data.copy()
+        data['id_actividad'] = actividad.id_actividad
+        
+        serializer = ModulosSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Modulo publicado con éxito"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 #api/admin/login/
 class AdminLoginView(APIView):
@@ -588,12 +649,24 @@ class EstadisticasCreateView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 #api/user/progress/user/<int:id_usuario>/
+#api/user/progress/user/<int:id_usuario>/
 class UserProgressView(APIView):
     def get_object(self, id_usuario):
         try:
             return ProgresoUsuarios.objects.get(id_usuario=id_usuario)
         except ProgresoUsuarios.DoesNotExist:
             return None
+        
+    def get(self, request, id_usuario):
+        # Recuperar todos los registros de ProgresoUsuarios con el id_usuario proporcionado
+        progresos_usuario = ProgresoUsuarios.objects.filter(id_usuario=id_usuario)
+        
+        # Verificar si se encontraron registros
+        if progresos_usuario.exists():
+            serializer = ProgresoUsuariosSerializer(progresos_usuario, many=True)
+            return Response(serializer.data)
+        else:
+            return Response({"error": f"No se encontraron registros de progreso para el usuario con ID {id_usuario}"}, status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request, id_usuario):
         try:
@@ -611,14 +684,27 @@ class UserProgressView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, id_usuario):
-        progreso_usuario = self.get_object(id_usuario)
-        if progreso_usuario is not None:
-            serializer = ProgresoUsuariosSerializer(progreso_usuario, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"error": f"El progreso del usuario con ID {id_usuario} no existe"}, status=status.HTTP_404_NOT_FOUND)
+        id_actividad = request.data.get("id_actividad")
+        id_modulo = request.data.get("id_modulo")
+        estado_actividad = request.data.get("estado_actividad")
+        estado_modulo = request.data.get("estado_modulo")
+
+        try:
+            progreso_usuario = ProgresoUsuarios.objects.get(
+                id_usuario=id_usuario,
+                id_actividad=id_actividad,
+                id_modulo=id_modulo
+            )
+
+            # Actualiza los campos específicos
+            progreso_usuario.estado_actividad = estado_actividad
+            progreso_usuario.estado_modulo = estado_modulo
+            progreso_usuario.save()
+
+            serializer = ProgresoUsuariosSerializer(progreso_usuario)
+            return Response(serializer.data)
+        except ProgresoUsuarios.DoesNotExist:
+            return Response({"error": f"No se encontró un registro de progreso con los criterios proporcionados"}, status=status.HTTP_404_NOT_FOUND)
     
 
 
@@ -650,13 +736,14 @@ class UserLoginView(APIView):
         try:
             user = Usuario.objects.get(email=email)
             if user.contrasena == contrasena:
+                id_usuario = user.id_usuario
                 # Aquí puedes generar un token como lo estabas haciendo
                 serializer = TokenSerializer(data={
                     "token": jwt_encode_handler(
                         jwt_payload_handler(user)
                     )})
                 serializer.is_valid()
-                return Response({"message": "Credenciales válidas", "token": serializer.data})
+                return Response({"message": "Credenciales válidas", "token": serializer.data, "id": id_usuario} )
         except Usuario.DoesNotExist:
             pass
 
@@ -668,3 +755,107 @@ class UserLogout(APIView):
         # simplemente elimina la sesión actual del usuario
         request.user.auth_token.delete()
         return Response(status=status.HTTP_200_OK)
+    
+#api/preguntas/all/
+class PreguntasListView(APIView):
+    def get(self, request):
+        preguntas = Preguntas.objects.all()
+        serializer = PreguntasSerializer(preguntas, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        preguntas_data = request.data  # Obtenemos los datos JSON enviados en la solicitud
+        preguntas_con_id = []  # Aquí almacenaremos las preguntas con ID asignado
+
+        for pregunta_data in preguntas_data:
+            # Creamos una nueva pregunta en la base de datos y asignamos un ID automáticamente
+            nueva_pregunta = Preguntas.objects.create(contenido=pregunta_data['contenido'])
+            
+            # Serializamos la pregunta recién creada
+            serializer = PreguntasSerializer(nueva_pregunta)
+            preguntas_con_id.append(serializer.data)
+
+        return Response(preguntas_con_id, status=status.HTTP_201_CREATED)
+
+
+#api/preguntas/<int:id_pregunta>/
+class PreguntasDetailView(APIView):
+    def get(self, request, id_pregunta):
+        pregunta = get_object_or_404(Preguntas, id_pregunta=id_pregunta)
+        serializer =PreguntasSerializer(pregunta)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        serializer = PreguntasSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Pregunta publicada con éxito"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request, id_pregunta):
+        pregunta = get_object_or_404(Preguntas, id_pregunta=id_pregunta)
+        serializer = PreguntasSerializer(pregunta, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Pregunta actualizada con éxito"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, id_pregunta):
+        pregunta = get_object_or_404(Preguntas, id_pregunta=id_pregunta)
+        pregunta.delete()
+        return Response({"message": "Actividad eliminada con éxito"})
+    
+#api/respuestas/<int:id_usuario>/<int:id_evaluacion>/ 
+class RespuestasDetailView(APIView):
+    def get(self, request, id_usuario, id_evaluacion):
+        respuestas = Respuestas.objects.filter(id_usuario=id_usuario, id_evaluacion=id_evaluacion)
+        serializer = RespuestasSerializer(respuestas, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, id_usuario, id_evaluacion):
+        try:
+            respuestas_data = request.data  # Obtenemos los datos JSON enviados en la solicitud
+            respuestas_creadas = []
+            #Obtener el id_usuario de la tabla Usuario
+            user = Usuario.objects.get(id_usuario=id_usuario)
+            idUsuario = user.id_usuario
+            #Obtener el id_evaluacion de la tabla Evaluaciones
+            evaluacion = Evaluaciones.objects.get(id_evaluacion=id_evaluacion)
+            id_evaluacion = evaluacion.id_evaluacion
+            print (idUsuario, id_evaluacion)
+            for respuesta_data in respuestas_data:
+                id_pregunta_json = respuesta_data.get('id')
+                respuesta_valor = respuesta_data.get('respuesta')
+                pregunta = Preguntas.objects.get(id_pregunta=id_pregunta_json)
+                # Crear una nueva respuesta en la base de datos y asignar un ID automáticamente
+                respuesta = Respuestas(id_evaluacion=evaluacion, id_usuario=user, id_pregunta=pregunta, respuesta=respuesta_valor)
+                respuesta.save()
+                respuestas_creadas.append({"id_respuesta": respuesta.id})
+
+            return Response({"message": "Respuestas creadas exitosamente.", "respuestas_creadas": respuestas_creadas}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+    def put(self, request, id_usuario, id_evaluacion, id_respuesta):
+        respuesta = get_object_or_404(Respuestas, id_usuario=id_usuario, id_evaluacion=id_evaluacion, id_respuesta=id_respuesta)
+        serializer = RespuestasSerializer(respuesta, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Respuesta actualizada con éxito."})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id_usuario, id_evaluacion, id_respuesta):
+        respuesta = get_object_or_404(Respuestas, id_usuario=id_usuario, id_evaluacion=id_evaluacion, id_respuesta=id_respuesta)
+        respuesta.delete()
+        return Response({"message": "Respuesta eliminada con éxito."})
+    
+
+from rest_framework import permissions
+from rest_framework.schemas import get_schema_view
+
+schema_view = get_schema_view(
+    title="API de SEL4C",
+    public=True,
+    permission_classes=[permissions.AllowAny],  # Puedes cambiar esto según tus necesidades de autenticación
+)
