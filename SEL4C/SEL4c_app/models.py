@@ -186,3 +186,4 @@ class Respuestas(models.Model):
 
     def str(self):
         return self.respuesta
+
