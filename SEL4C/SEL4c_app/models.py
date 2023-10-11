@@ -101,6 +101,7 @@ class Evaluaciones(models.Model):
         return f"Evaluación tipo {self.tipo_evaluacion}"
 
 
+
 # ==== TABLA RESULTADO EVALUACIONES ====
 class ResultadoEvaluaciones(models.Model):
     id_resultado = models.AutoField(primary_key=True)
@@ -164,23 +165,24 @@ class Administrador(models.Model):
     def __str__(self):
         return self.username
     
+
 # ==== TABLA PREGUNTAS ====
 class Preguntas(models.Model):
     id_pregunta = models.AutoField(primary_key=True)
     contenido = models.CharField(max_length=1000)
     
-    def _str_(self):
+    def __str__(self):
         return self.contenido
     
 
 # ====TABLA RESUPUESTAS ====
 class Respuestas(models.Model):
     id_respuesta = models.AutoField(primary_key=True)
-    id_evaluacion = models.ForeignKey(Evaluaciones, on_delete=models.CASCADE, db_column='id_evaluacion')
+    id_evaluacion = models.ForeignKey(Evaluaciones, on_delete=models.CASCADE, db_column='id_evaluacionn')
     id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
     id_pregunta = models.ForeignKey(Preguntas, on_delete=models.CASCADE, db_column='id_pregunta')
     respuesta = models.IntegerField()
 
 
-    def _str_(self):
+    def str(self):
         return self.respuesta

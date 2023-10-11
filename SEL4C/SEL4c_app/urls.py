@@ -3,7 +3,7 @@ from . import views
 
 from .views import UserProfileView, UserLoginView, UserSignupView, UploadEvaluationResultsView, UploadModuleEvidenceView, ActivityDetailView, ModuleDetailView, AdminDetailView, AdminListView, CreateEvaluationView
 from .views import AdminLoginView, AdminDashboardView, AdminPersonalProgressView, AdminUsersListView, AdminGenderSegmentationView, AdminAgeSegmentationView, AdminNationalitySegmentationView, AdminEducationSegmentationView
-from .views import UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView, ActivityCreateView, ModuleCreateView, ActivityListView, ModuleListView, UserProgressView
+from .views import UserProgressBarsView, UserProgressBriefView, UserProgressInitialEvaluationView, UserProgressFinalEvaluationView, ActivityCreateView, ModuleCreateView, ModuleUpdateView, ActivityListView, ModuleListView, UserProgressView
 from .views import EstadisticasCreateView, UserProgressActivtiesView, AdminSignupView, AdminLogoutView, PreguntasListView, PreguntasDetailView, RespuestasDetailView
 
 from django.contrib import admin
@@ -38,7 +38,9 @@ urlpatterns = [
     # Modules OK
     path('api/admin/activity/<int:id_actividad>/module/all/', ModuleListView.as_view(), name='module-detail'),
     path('api/admin/activity/<int:id_actividad>/module/<int:id_modulo>/', ModuleDetailView.as_view(), name='module-detail'),
-    path('api/admin/activity/<int:id_actividad>/module/create/', views.ModuleCreateView, name='module-detail'),
+    path('api/admin/activity/<int:id_actividad>/module/<int:id_modulo>/update/', ModuleUpdateView.as_view(), name='module-update'),
+    #path('api/admin/activity/<int:id_actividad>/module/create/', views.ModuleCreateView, name='module-detail'),
+    path('api/admin/activity/<int:id_actividad>/module/create/', ModuleCreateView.as_view(), name='module-detail'),
             #OLD VIEW
             # path('api/admin/activity/<int:id_actividad>/module/', ModuleCreateView.as_view(), name='module-detail'),
     # Evidences OK

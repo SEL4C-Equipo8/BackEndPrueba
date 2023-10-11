@@ -204,23 +204,60 @@ class ModuleDetailView(APIView):
     def get(self, request, id_actividad, id_modulo):
         modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
         serializer = ModulosSerializer(modulo)
+        if request.accepted_renderer.format == 'html':
+            # Si la solicitud acepta formato HTML, renderiza el formulario
+            form = ModulesForm(instance=modulo)
+            return render(request, 'form.html', {'form': form, 'serializer': serializer.data})
+        # Si no, responde con JSON
         return Response(serializer.data)
-
+    
     def put(self, request, id_actividad, id_modulo):
         modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
         serializer = ModulosSerializer(modulo, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Módulo actualizado con éxito"})
+            return Response({"message": "Modulo actualizado con éxito"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id_actividad, id_modulo):
         modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
         modulo.delete()
         return Response({"message": "Módulo eliminado con éxito"})
-    
+
+'''
+def ModuleUpdateView(request, id_actividad, id_modulo):
+    # Obtén la instancia del módulo que deseas actualizar
+    modulo = get_object_or_404(Modulos, id_modulo=id_modulo)
+
+    if request.method == 'POST':
+        # Si el formulario se ha enviado con datos, procesa el formulario
+        form = ModulesForm(request.POST, instance=modulo)
+
+        if form.is_valid():
+            # Guarda los cambios en el módulo
+            form.save()
+        return HttpResponse('<script>alert("Modulo Actualizado");window.location.href="/api/admin/activity/'+str(id_actividad)+'/module/'+str(id_modulo)+'/update/";</script>')
+
+    else:
+        # Si no se ha enviado el formulario, crea una instancia del formulario con los datos actuales del módulo
+        form = ModulesForm(instance=modulo)
+
+    return render(request, 'formUpdate.html', {'form': form})
+'''
+
+class ModuleUpdateView(APIView):
+    def put(self, request, id_actividad, id_modulo):
+        modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
+        serializer = ModulosSerializer(modulo, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Modulo actualizado con éxito"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 #api/admin/activity/<int:id_actividad>/module/  
 #@csrf_exempt
+'''
 def ModuleCreateView(request, id_actividad):
     form = ModulesForm()
     if request.method == 'POST':
@@ -240,6 +277,26 @@ def ModuleCreateView(request, id_actividad):
     #else:
         #form = ModulesForm()
     return render(request, 'form.html', {'form': form})
+    '''
+
+class ModuleCreateView(APIView):
+    def post(self, request, id_actividad):
+        # Intenta obtener la Actividad con el id_actividad proporcionado
+        try:
+            actividad = Actividades.objects.get(pk=id_actividad)
+        except Actividades.DoesNotExist:
+            return Response({'error': 'Actividad no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Modifica el request.data para agregar el id_actividad (asegúrate de hacer una copia para no modificar el request original)
+        data = request.data.copy()
+        data['id_actividad'] = actividad.id_actividad
+        
+        serializer = ModulosSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Modulo publicado con éxito"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 #api/admin/login/
 class AdminLoginView(APIView):
