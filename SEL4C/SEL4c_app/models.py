@@ -178,7 +178,7 @@ class Preguntas(models.Model):
 # ====TABLA RESUPUESTAS ====
 class Respuestas(models.Model):
     id_respuesta = models.AutoField(primary_key=True)
-    id_evaluacion = models.ForeignKey(Evaluaciones, on_delete=models.CASCADE, db_column='id_evaluacionn')
+    id_evaluacion = models.ForeignKey(Evaluaciones, on_delete=models.CASCADE, db_column='id_evaluacion')
     id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
     id_pregunta = models.ForeignKey(Preguntas, on_delete=models.CASCADE, db_column='id_pregunta')
     respuesta = models.IntegerField()
