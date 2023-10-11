@@ -830,7 +830,7 @@ class RespuestasDetailView(APIView):
                 # Crear una nueva respuesta en la base de datos y asignar un ID automáticamente
                 respuesta = Respuestas(id_evaluacion=evaluacion, id_usuario=user, id_pregunta=pregunta, respuesta=respuesta_valor)
                 respuesta.save()
-                respuestas_creadas.append({"id_respuesta": respuesta.id})
+                respuestas_creadas.append({"id_respuesta": respuesta.id_respuesta})
 
             return Response({"message": "Respuestas creadas exitosamente.", "respuestas_creadas": respuestas_creadas}, status=status.HTTP_201_CREATED)
         except Exception as e:
