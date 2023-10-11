@@ -504,6 +504,39 @@ class UserProgressBarsView(APIView):
 
         return Response(data)
     
+    def put(self, request, id_usuario):
+        try:
+            usuario = Usuario.objects.get(id_usuario=id_usuario)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        estadisticas = Estadisticas.objects.filter(id_usuario=id_usuario).first()
+
+        if not estadisticas:
+            return Response({"error": "Estadísticas no encontradas"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Actualiza los datos de progreso con los datos proporcionados en la solicitud PUT
+        # Asumiendo que la solicitud PUT contiene un JSON con los datos a actualizar
+        # Ejemplo de solicitud PUT JSON: {"actividades": 10, "evidencias": 5, "progreso": 80}
+        if 'actividades' in request.data:
+            estadisticas.actividades = request.data['actividades']
+        if 'evidencias' in request.data:
+            estadisticas.evidencias = request.data['evidencias']
+        if 'progreso' in request.data:
+            estadisticas.progreso = request.data['progreso']
+
+        estadisticas.save()  # Guardar los cambios en la base de datos
+
+        data = {
+            "id_estadistica": estadisticas.id_estadistica,
+            "id_usuario": usuario.id_usuario,
+            "actividades": estadisticas.actividades,
+            "evidencias": estadisticas.evidencias,
+            "progreso": estadisticas.progreso,
+        }
+
+        return Response(data)
+    
 #api/user/progress/activities/<int:id_usuario>/
 class UserProgressActivtiesView(APIView):
     def post(self, request, id_usuario):
@@ -564,6 +597,30 @@ class UserProgressBriefView(APIView):
         }
 
         return Response(data)
+    
+    def put(self, request, id_usuario):
+        try:
+            usuario = Usuario.objects.get(id_usuario=id_usuario)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        progreso_actividades = ProgresoActividades.objects.filter(id_usuario=id_usuario).first()
+
+        if not progreso_actividades:
+            return Response({"error": "Progreso de actividades no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get the activity name and new value from the request data
+        activity_name = request.data.get("activity_name")
+        new_value = request.data.get("new_value")
+
+        # Check if the activity_name is valid and update the corresponding field
+        if activity_name in ["actividad1", "actividad2", "actividad3", "actividad4"]:
+            setattr(progreso_actividades, activity_name, new_value)
+            progreso_actividades.save()
+            serializer = ProgresoActividadesSerializer(progreso_actividades)
+            return Response(serializer.data)
+        else:
+            return Response({"error": "Actividad no válida"}, status=status.HTTP_400_BAD_REQUEST)
 
 #api/user/progress/initialEvaluation/<int:id_usuario/
 class UserProgressInitialEvaluationView(APIView):
