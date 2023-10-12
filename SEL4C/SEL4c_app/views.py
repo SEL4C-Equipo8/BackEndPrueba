@@ -16,6 +16,8 @@ from .forms import ModulesForm
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 #api/user/profile/<int:user_id>/
 class UserProfileView(APIView):
@@ -59,6 +61,29 @@ class UserProfileView(APIView):
 
 #api/user/signup/
 class UserSignupView(APIView):
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Nombre de usuario'),
+                'email': openapi.Schema(type=openapi.TYPE_STRING, description='Correo electrónico'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='Contraseña'),
+                'photo': openapi.Schema(type=openapi.TYPE_FILE, description='Foto de perfil'),
+                'grado_ac': openapi.Schema(type=openapi.TYPE_STRING, description='Grado académico'),
+                'institucion': openapi.Schema(type=openapi.TYPE_STRING, description='Institución'),
+                'genero': openapi.Schema(type=openapi.TYPE_STRING, description='Género'),
+                'edad': openapi.Schema(type=openapi.TYPE_INTEGER, description='Edad'),
+                'pais': openapi.Schema(type=openapi.TYPE_STRING, description='País'),
+                'disciplina': openapi.Schema(type=openapi.TYPE_STRING, description='Disciplina'),
+                # Agrega aquí otros campos según tus necesidades
+            },
+            required=['username', 'password', 'email', 'photo', 'grado_ac', 'institucion', 'genero', 'edad', 'pais', 'disciplina']
+        ),
+        responses={
+            201: 'Usuario registrado con éxito',
+            400: 'Bad Request'
+        }
+    )
     def post(self, request, *args, **kwargs):
         # Obtenemos los datos del usuario desde la solicitud POST
         data = request.data
