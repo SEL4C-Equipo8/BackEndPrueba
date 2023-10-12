@@ -18,6 +18,7 @@ from django.http import HttpResponse
 from django.contrib import messages
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from .swagger_params import *
 
 #api/user/profile/<int:user_id>/
 class UserProfileView(APIView):
@@ -25,7 +26,7 @@ class UserProfileView(APIView):
         usuario = get_object_or_404(Usuario, id_usuario=user_id)
         serializer = UsuarioSerializer(usuario)
         return Response(serializer.data)
-
+    @updateUserProfile_swagger()
     def put(self, request, user_id):
         usuario = get_object_or_404(Usuario, id_usuario=user_id)
         serializer = UsuarioSerializer(usuario, data=request.data)
@@ -61,29 +62,7 @@ class UserProfileView(APIView):
 
 #api/user/signup/
 class UserSignupView(APIView):
-    @swagger_auto_schema(
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Nombre de usuario'),
-                'email': openapi.Schema(type=openapi.TYPE_STRING, description='Correo electrónico'),
-                'password': openapi.Schema(type=openapi.TYPE_STRING, description='Contraseña'),
-                'photo': openapi.Schema(type=openapi.TYPE_FILE, description='Foto de perfil'),
-                'grado_ac': openapi.Schema(type=openapi.TYPE_STRING, description='Grado académico'),
-                'institucion': openapi.Schema(type=openapi.TYPE_STRING, description='Institución'),
-                'genero': openapi.Schema(type=openapi.TYPE_STRING, description='Género'),
-                'edad': openapi.Schema(type=openapi.TYPE_INTEGER, description='Edad'),
-                'pais': openapi.Schema(type=openapi.TYPE_STRING, description='País'),
-                'disciplina': openapi.Schema(type=openapi.TYPE_STRING, description='Disciplina'),
-                # Agrega aquí otros campos según tus necesidades
-            },
-            required=['username', 'password', 'email', 'photo', 'grado_ac', 'institucion', 'genero', 'edad', 'pais', 'disciplina']
-        ),
-        responses={
-            201: 'Usuario registrado con éxito',
-            400: 'Bad Request'
-        }
-    )
+    @signUp_swagger()
     def post(self, request, *args, **kwargs):
         # Obtenemos los datos del usuario desde la solicitud POST
         data = request.data
@@ -108,6 +87,7 @@ class UserSignupView(APIView):
 
 #api/user/evaluations/create
 class CreateEvaluationView(APIView):
+    @createEvaluation_swagger()
     def post(self, request):
         try:
             # Obtener los datos de la solicitud
@@ -132,6 +112,7 @@ class CreateEvaluationView(APIView):
 
 #api/user/evaluations/
 class UploadEvaluationResultsView(APIView):
+    @uploadEvaluation_swagger()
     def post(self, request):
         data = request.data
         try:
@@ -166,6 +147,7 @@ class UploadEvaluationResultsView(APIView):
 
 #api/user/evidences/
 class UploadModuleEvidenceView(APIView):
+    @uploadModuleEvidence_swagger()
     def post(self, request):
         # Obtén los datos de la solicitud JSON
         data = request.data
@@ -193,7 +175,7 @@ class ActivityDetailView(APIView):
         actividad = get_object_or_404(Actividades, id_actividad=id_actividad)
         serializer = ActividadesSerializer(actividad)
         return Response(serializer.data)
-    
+    @updateActivity_swagger()
     def put(self, request, id_actividad):
         actividad = get_object_or_404(Actividades, id_actividad=id_actividad)
         serializer = ActividadesSerializer(actividad, data=request.data)
@@ -209,6 +191,7 @@ class ActivityDetailView(APIView):
 
 #api/admin/activities/
 class ActivityCreateView(APIView):
+    @activityCreateView_swagger()
     def post(self, request):
         serializer = ActividadesSerializer(data=request.data)
         if serializer.is_valid():
@@ -235,7 +218,7 @@ class ModuleDetailView(APIView):
             return render(request, 'form.html', {'form': form, 'serializer': serializer.data})
         # Si no, responde con JSON
         return Response(serializer.data)
-    
+    @updateModule_swagger()
     def put(self, request, id_actividad, id_modulo):
         modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
         serializer = ModulosSerializer(modulo, data=request.data)
@@ -271,6 +254,7 @@ def ModuleUpdateView(request, id_actividad, id_modulo):
 '''
 
 class ModuleUpdateView(APIView):
+    @updateModule_swagger()
     def put(self, request, id_actividad, id_modulo):
         modulo = get_object_or_404(Modulos, id_modulo=id_modulo, id_actividad=id_actividad)
         serializer = ModulosSerializer(modulo, data=request.data)
@@ -305,6 +289,7 @@ def ModuleCreateView(request, id_actividad):
     '''
 
 class ModuleCreateView(APIView):
+    @createModule_swagger()
     def post(self, request, id_actividad):
         # Intenta obtener la Actividad con el id_actividad proporcionado
         try:
@@ -325,6 +310,7 @@ class ModuleCreateView(APIView):
 
 #api/admin/login/
 class AdminLoginView(APIView):
+    @adminLogin_swagger()
     def post(self, request):
         # Obtener el correo electrónico y la contraseña de la solicitud POST
         correo = request.data.get('correo')
@@ -396,7 +382,7 @@ class AdminListView(APIView):
         administradores = Administrador.objects.all()
         serializer = AdministradorSerializer(administradores, many=True)
         return Response(serializer.data)
-
+    @adminLogin_swagger()
     def post(self, request):
         data = request.data
         serializer = AdministradorSerializer(data=data)
@@ -411,7 +397,7 @@ class AdminDetailView(APIView):
         admin = get_object_or_404(Administrador, id_admin=id_admin)
         serializer = AdministradorSerializer(admin)
         return Response(serializer.data)
-
+    @detailAdmin_swagger()
     def put(self, request, id_admin):
         admin = get_object_or_404(Administrador, id_admin=id_admin)
         serializer = AdministradorSerializer(admin, data=request.data)
@@ -419,7 +405,7 @@ class AdminDetailView(APIView):
             serializer.save()
             return Response({"mensaje": "Administrador actualizado exitosamente"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    @detailAdmin_swagger()
     def delete(self, request, id_admin):
         admin = get_object_or_404(Administrador, id_admin=id_admin)
         admin.delete()
@@ -528,7 +514,7 @@ class UserProgressBarsView(APIView):
         }
 
         return Response(data)
-    
+    @graficaBarras_swagger()
     def put(self, request, id_usuario):
         try:
             usuario = Usuario.objects.get(id_usuario=id_usuario)
@@ -564,6 +550,7 @@ class UserProgressBarsView(APIView):
     
 #api/user/progress/activities/<int:id_usuario>/
 class UserProgressActivtiesView(APIView):
+    @progresoActividades_swagger()
     def post(self, request, id_usuario):
         try:
             usuario = Usuario.objects.get(id_usuario=id_usuario)
@@ -593,11 +580,9 @@ class UserProgressActivtiesView(APIView):
         )
 
         return Response({"message": "Progreso de actividades actualizado exitosamente"}, status=status.HTTP_200_OK)
-
+    @actualizarProgresoActividades_swagger()
     def put(self, request, id_usuario):
         return self.post(request, id_usuario)
-
-
 
 #api/user/progress/brief/<int:id_usuario>/
 class UserProgressBriefView(APIView):
@@ -622,7 +607,7 @@ class UserProgressBriefView(APIView):
         }
 
         return Response(data)
-    
+    @actualizarProgresoActividades_swagger()
     def put(self, request, id_usuario):
         try:
             usuario = Usuario.objects.get(id_usuario=id_usuario)
@@ -715,6 +700,7 @@ class UserProgressFinalEvaluationView(APIView):
     
 #api/admin/estadisticas/create/
 class EstadisticasCreateView(APIView):
+    @publicarEstadisticas_swagger()
     def post(self, request):
         # Obtén los datos del cuerpo de la solicitud JSON
         data = request.data
@@ -730,7 +716,6 @@ class EstadisticasCreateView(APIView):
             # Si la validación falla, devuelve los errores
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-#api/user/progress/user/<int:id_usuario>/
 #api/user/progress/user/<int:id_usuario>/
 class UserProgressView(APIView):
     def get_object(self, id_usuario):
@@ -749,7 +734,7 @@ class UserProgressView(APIView):
             return Response(serializer.data)
         else:
             return Response({"error": f"No se encontraron registros de progreso para el usuario con ID {id_usuario}"}, status=status.HTTP_404_NOT_FOUND)
-
+    @actualizarProgresoUsuario_swagger()
     def post(self, request, id_usuario):
         try:
             # Verifica si el usuario existe antes de crear el registro de progreso
@@ -764,7 +749,7 @@ class UserProgressView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    @actualizarProgresoUsuario_swagger()
     def put(self, request, id_usuario):
         id_actividad = request.data.get("id_actividad")
         id_modulo = request.data.get("id_modulo")
@@ -809,7 +794,7 @@ class UserLoginView(APIView):
 
     # Esta clase de permiso anulará la configuración global de permisos
     permission_classes = (permissions.AllowAny,)
-
+    @loginUsuario_swagger()
     def post(self, request, *args, **kwargs):
         email = request.data.get("email", "")
         contrasena = request.data.get("contrasena", "")
@@ -844,7 +829,7 @@ class PreguntasListView(APIView):
         preguntas = Preguntas.objects.all()
         serializer = PreguntasSerializer(preguntas, many=True)
         return Response(serializer.data)
-    
+    @publicarPreguntas_swagger()
     def post(self, request):
         preguntas_data = request.data  # Obtenemos los datos JSON enviados en la solicitud
         preguntas_con_id = []  # Aquí almacenaremos las preguntas con ID asignado
@@ -866,14 +851,14 @@ class PreguntasDetailView(APIView):
         pregunta = get_object_or_404(Preguntas, id_pregunta=id_pregunta)
         serializer =PreguntasSerializer(pregunta)
         return Response(serializer.data)
-    
+    @publicarPreguntas_swagger()
     def post(self, request):
         serializer = PreguntasSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Pregunta publicada con éxito"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+    @actualizarPregunta_swagger()
     def put(self, request, id_pregunta):
         pregunta = get_object_or_404(Preguntas, id_pregunta=id_pregunta)
         serializer = PreguntasSerializer(pregunta, data=request.data)
@@ -881,7 +866,7 @@ class PreguntasDetailView(APIView):
             serializer.save()
             return Response({"message": "Pregunta actualizada con éxito"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+    @eliminarPregunta_swagger()
     def delete(self, request, id_pregunta):
         pregunta = get_object_or_404(Preguntas, id_pregunta=id_pregunta)
         pregunta.delete()
@@ -893,7 +878,8 @@ class RespuestasDetailView(APIView):
         respuestas = Respuestas.objects.filter(id_usuario=id_usuario, id_evaluacion=id_evaluacion)
         serializer = RespuestasSerializer(respuestas, many=True)
         return Response(serializer.data)
-
+    # Función para documentación
+    @enviarRespuestas_swagger()
     def post(self, request, id_usuario, id_evaluacion):
         try:
             respuestas_data = request.data  # Obtenemos los datos JSON enviados en la solicitud
@@ -918,19 +904,12 @@ class RespuestasDetailView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
-
-    def put(self, request, id_usuario, id_evaluacion, id_respuesta):
-        respuesta = get_object_or_404(Respuestas, id_usuario=id_usuario, id_evaluacion=id_evaluacion, id_respuesta=id_respuesta)
-        serializer = RespuestasSerializer(respuesta, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Respuesta actualizada con éxito."})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    '''
     def delete(self, request, id_usuario, id_evaluacion, id_respuesta):
         respuesta = get_object_or_404(Respuestas, id_usuario=id_usuario, id_evaluacion=id_evaluacion, id_respuesta=id_respuesta)
         respuesta.delete()
         return Response({"message": "Respuesta eliminada con éxito."})
+    '''
     
 
 from rest_framework import permissions
