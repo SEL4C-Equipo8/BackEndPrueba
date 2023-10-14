@@ -116,8 +116,7 @@ DATABASES = {
         "NAME": "sel4c",
         "USER": "superEquipo8",
         "PASSWORD":"@SEL4Cdb",
-        "HOST":"54.205.255.125",
-        "HOST":"54.205.255.125",
+        "HOST":"34.230.9.105",
         "PORT":""
     }
 }
