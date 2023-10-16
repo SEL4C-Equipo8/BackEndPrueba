@@ -37,7 +37,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 # Permitir uso de HTTPS
 SECURE_SSL_REDIRECT = True
-
+SSLPORT = 443
 # Application definition
 
 INSTALLED_APPS = [
@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'clearcache',
     'drf_yasg',
     'corsheaders',
+    'sslserver',
 ]
 
 SESSION_COOKIE_NAME = 'SEL4C_sessionid'
