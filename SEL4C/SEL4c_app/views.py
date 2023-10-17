@@ -109,7 +109,7 @@ class CreateEvaluationView(APIView):
         serializer = EvaluacionesSerializer(evaluaciones, many=True)
         return Response(serializer.data)
 
-
+from django.db.models import Sum, Avg
 #api/user/evaluations/
 class UploadEvaluationResultsView(APIView):
     @uploadEvaluation_swagger()
@@ -117,11 +117,6 @@ class UploadEvaluationResultsView(APIView):
         data = request.data
         try:
             idevaluacion = data.get('id_evaluacion')
-            competencia1 = data.get('competencia_1')
-            competencia2 = data.get('competencia_2')
-            competencia3 = data.get('competencia_3')
-            competencia4 = data.get('competencia_4')
-            competencia5 = data.get('competencia_5')
             idusuario = data.get('id_usuario')  # Obtener el ID del usuario
 
             # Buscar el objeto Usuario correspondiente o devolver un error 404 si no existe
@@ -130,20 +125,95 @@ class UploadEvaluationResultsView(APIView):
             if usuario is None:
                 return Response({"message": "Usuario no encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
+            # Calcular las competencias
+            respuestas = Respuestas.objects.filter(id_evaluacion=idevaluacion, id_usuario=idusuario)
+            # Ordendar respuestas por id_pregunta ascendentemente
+            respuestas = respuestas.order_by('id_pregunta')
+            max_respuesta = 5  # El máximo valor posible para una respuesta
+
+            competencia_2 = (respuestas.filter(id_pregunta__in=range(25, 31)).aggregate(total=Sum('respuesta'))['total'] / (max_respuesta * 6) * 100)
+            competencia_3 = (respuestas.filter(id_pregunta__in=range(31, 38)).aggregate(total=Sum('respuesta'))['total'] / (max_respuesta * 7) * 100)
+            competencia_4 = (respuestas.filter(id_pregunta__in=range(38, 44)).aggregate(total=Sum('respuesta'))['total'] / (max_respuesta * 6) * 100)
+            competencia_5 = (respuestas.filter(id_pregunta__in=range(44, 50)).aggregate(total=Sum('respuesta'))['total'] / (max_respuesta * 6) * 100)
+
+            competencia_1 = ((competencia_2 + competencia_3 + competencia_4 + competencia_5)/4)
+
             # Crear un nuevo objeto de evaluación y asignar el usuario
             evaluacion = ResultadoEvaluaciones.objects.create(
                 id_evaluacion_id=idevaluacion,
                 id_usuario_id=usuario.id_usuario,  # Asignar el usuario al objeto de evaluación
-                competencia_1=competencia1,
-                competencia_2=competencia2,
-                competencia_3=competencia3,
-                competencia_4=competencia4,
-                competencia_5=competencia5
+                competencia_1=competencia_1,
+                competencia_2=competencia_2,
+                competencia_3=competencia_3,
+                competencia_4=competencia_4,
+                competencia_5=competencia_5
             )
             
             return Response({"message": "Resultado subido."}, status=status.HTTP_201_CREATED)
         except:
             return Response({"message": "Error al subir el resultado."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    @uploadEvaluation_swagger()
+    def put(self, request):
+        data = request.data
+        try:
+            idevaluacion = data.get('id_evaluacion')
+            idusuario = data.get('id_usuario')  # Obtener el ID del usuario
+
+            # Buscar el objeto Usuario correspondiente o devolver un error 404 si no existe
+            usuario = Usuario.objects.filter(id_usuario=idusuario).first()
+
+            if usuario is None:
+                return Response({"message": "Usuario no encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+            # Calcular las competencias
+            respuestas = Respuestas.objects.filter(id_evaluacion=idevaluacion, id_usuario=idusuario)
+            # Ordendar respuestas por id_pregunta
+            respuestas = respuestas.order_by('id_pregunta')
+            max_respuesta = 5  # El máximo valor posible para una respuesta
+
+            # competencia_1 = (respuestas.aggregate(promedio=Avg('respuesta'))['promedio'] / max_respuesta * 100
+            #                  if respuestas.exists() 
+            #                  else None)
+            competencia_2 = (respuestas.filter(id_pregunta__in=range(25, 31)).aggregate(total=Sum('respuesta'))['total'] / (max_respuesta * 6) * 100)
+            print (competencia_2)
+            competencia_3 = (respuestas.filter(id_pregunta__in=range(31, 38)).aggregate(total=Sum('respuesta'))['total'] / (max_respuesta * 7) * 100)
+            print (competencia_3)
+            competencia_4 = (respuestas.filter(id_pregunta__in=range(38, 44)).aggregate(total=Sum('respuesta'))['total'] / (max_respuesta * 6) * 100)
+            print (competencia_4)
+            competencia_5 = (respuestas.filter(id_pregunta__in=range(44, 50)).aggregate(total=Sum('respuesta'))['total'] / (max_respuesta * 6) * 100)
+            print (competencia_5)
+            # Calcular competencia 1 a partir del promedio de las demas competencias
+            competencia_1 = ((competencia_2 + competencia_3 + competencia_4 + competencia_5)/4)
+            print (competencia_1)
+
+            # Actualizar el objeto de evaluación si existe, o crear uno nuevo si no
+            evaluacion, created = ResultadoEvaluaciones.objects.get_or_create(
+                id_evaluacion_id=idevaluacion,
+                id_usuario_id=usuario.id_usuario,  # Asignar el usuario al objeto de evaluación
+                defaults={
+                    'competencia_1': competencia_1,
+                    'competencia_2': competencia_2,
+                    'competencia_3': competencia_3,
+                    'competencia_4': competencia_4,
+                    'competencia_5': competencia_5
+                }
+            )
+
+            if not created:
+                # Si la evaluación ya existía, actualiza las competencias
+                evaluacion.competencia_1 = competencia_1
+                evaluacion.competencia_2 = competencia_2
+                evaluacion.competencia_3 = competencia_3
+                evaluacion.competencia_4 = competencia_4
+                evaluacion.competencia_5 = competencia_5
+                evaluacion.save()
+
+            return Response({"message": "Resultado actualizado."}, status=status.HTTP_200_OK)
+        except:
+            return Response({"message": "Error al actualizar el resultado."}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 #api/user/evidences/
 class UploadModuleEvidenceView(APIView):
@@ -881,6 +951,40 @@ class RespuestasDetailView(APIView):
     # Función para documentación
     @enviarRespuestas_swagger()
     def post(self, request, id_usuario, id_evaluacion):
+            try:
+                respuestas_data = request.data  # Obtenemos los datos JSON enviados en la solicitud
+                respuestas_creadas = []
+
+                # Obtener el id_usuario de la tabla Usuario
+                user = Usuario.objects.get(id_usuario=id_usuario)
+                # Obtener el id_evaluacion de la tabla Evaluaciones
+                evaluacion = Evaluaciones.objects.get(id_evaluacion=id_evaluacion)
+
+                for respuesta_data in respuestas_data:
+                    id_pregunta_json = respuesta_data.get('id')
+                    respuesta_valor = respuesta_data.get('respuesta')
+                    pregunta = Preguntas.objects.get(id_pregunta=id_pregunta_json)
+
+                    # Verificar si ya existe una respuesta para esta pregunta, usuario y evaluación
+                    respuesta, created = Respuestas.objects.get_or_create(
+                        id_evaluacion=evaluacion,
+                        id_usuario=user,
+                        id_pregunta=pregunta,
+                        defaults={'respuesta': respuesta_valor}
+                    )
+
+                    if not created:
+                        # Si ya existe, actualizamos la respuesta
+                        respuesta.respuesta = respuesta_valor
+                        respuesta.save()
+
+                    respuestas_creadas.append({"id_respuesta": respuesta.id_respuesta})
+
+                return Response({"message": "Respuestas creadas/actualizadas exitosamente.", "respuestas_creadas": respuestas_creadas}, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+'''
+    def post(self, request, id_usuario, id_evaluacion):
         try:
             respuestas_data = request.data  # Obtenemos los datos JSON enviados en la solicitud
             respuestas_creadas = []
@@ -903,13 +1007,12 @@ class RespuestasDetailView(APIView):
             return Response({"message": "Respuestas creadas exitosamente.", "respuestas_creadas": respuestas_creadas}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-    
-    '''
+
     def delete(self, request, id_usuario, id_evaluacion, id_respuesta):
         respuesta = get_object_or_404(Respuestas, id_usuario=id_usuario, id_evaluacion=id_evaluacion, id_respuesta=id_respuesta)
         respuesta.delete()
         return Response({"message": "Respuesta eliminada con éxito."})
-    '''
+'''
     
 
 from rest_framework import permissions

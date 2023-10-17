@@ -32,7 +32,7 @@ SECRET_KEY = 'django-insecure-l5s806r)k6+-y+4-@!a4i-*^3^n$n3&8is-j%+px6i=%v%3grm
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['34.230.9.105', 'sel4c.online']
+ALLOWED_HOSTS = ['34.230.9.105', 'sel4c.online', '127.0.0.1', 'www.sel4c.online']
 CORS_ORIGIN_ALLOW_ALL = True
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
