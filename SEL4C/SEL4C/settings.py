@@ -36,8 +36,8 @@ ALLOWED_HOSTS = ['34.230.9.105']
 CORS_ORIGIN_ALLOW_ALL = True
 
 # Permitir uso de HTTPS
-SECURE_SSL_REDIRECT = True
-SSLPORT = 443
+#SECURE_SSL_REDIRECT = True
+#SSLPORT = 443
 # Application definition
 
 INSTALLED_APPS = [
