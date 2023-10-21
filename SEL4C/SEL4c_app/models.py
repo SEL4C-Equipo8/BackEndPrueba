@@ -75,7 +75,7 @@ class Modulos(models.Model):
 # ==== TABLA EVIDENCIAS MODULOS ====
 class EvidenciaModulos(models.Model):
     id_respuesta = models.AutoField(primary_key=True)
-    id_modulo = models.OneToOneField(Modulos, on_delete=models.CASCADE, db_column='id_modulo')
+    id_modulo = models.ForeignKey(Modulos, on_delete=models.CASCADE, db_column='id_modulo')
     archivo_res = models.FileField(upload_to='evidencia_archivos/', null=True, blank=True)
 
     def __str__(self):
@@ -96,7 +96,7 @@ class Evaluaciones(models.Model):
 class ResultadoEvaluaciones(models.Model):
     id_resultado = models.AutoField(primary_key=True)
     id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
-    id_evaluacion = models.OneToOneField(Evaluaciones, on_delete=models.CASCADE, db_column='id_evaluacion')
+    id_evaluacion = models.ForeignKey(Evaluaciones, on_delete=models.CASCADE, db_column='id_evaluacion')
     competencia_1 = models.IntegerField()
     competencia_2 = models.IntegerField()
     competencia_3 = models.IntegerField()
